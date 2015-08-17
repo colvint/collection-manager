@@ -177,7 +177,7 @@ var ItemSelector = ReactMeteor.createClass({
   }
 });
 
-ItemManagerMixin = {
+CollectionManagerMixin = {
   getInitialState: function () {
     return {
       currentPage:   0,
