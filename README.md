@@ -34,10 +34,10 @@ Panel          = ReactBootstrap.Panel;
 For example, to create a manager for an *existing* `Organizations` collection:
 
 ```javascript
-OrganizationsDataGrid = ReactMeteor.createClass({
+ReactMeteor.createClass({
   mixins: [CollectionManagerMixin],
 
-  templateName:   'OrganizationsDataGrid', // this will make an OrganizationsDataGrid template
+  templateName:   'OrganizationManager', // this will make an OrganizationsDataGrid template
   collectionName: 'Organizations', // this collection is assumed to already exist
   singularName:   'organization', // how you want the collection to be referred to in the singular
   pluralName:     'organizations', // ditto for plural
@@ -55,10 +55,10 @@ OrganizationsDataGrid = ReactMeteor.createClass({
 });
 ```
 
-## Use our new ReactJS component template in any Meteor template
+## Use our new `OrganizationManager` in any Meteor template
 
 ```html
 <div>
-  {{> OrganizationsDataGrid}}
+  {{> OrganizationManager}}
 </div>
 ```
