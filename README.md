@@ -1,4 +1,4 @@
-# item-manager
+# collection-manager
 Meteor package which provides a client-side collection manager (CRUD)
 
 ### Screenshot
@@ -9,8 +9,8 @@ Meteor package which provides a client-side collection manager (CRUD)
 
 - Pull this repo into your `packages` directory:
   - `cd path/to/you/application/packages`
-  - `git clone git@github.com:colvint/item-manager.git`
-- Run `meteor add tauruscolvin:item-manager`
+  - `git clone git@github.com:colvint/collection-manager.git`
+- Run `meteor add tauruscolvin:collection-manager`
 
 ## Configure `ReactBootstrap` components
 
@@ -29,18 +29,18 @@ NavItem        = ReactBootstrap.NavItem;
 Panel          = ReactBootstrap.Panel;
 ```
 
-## Use the `ItemManagerMixin` to create your own Item Manager
+## Use the `CollectionManagerMixin` to create your own collection manager
 
-For example, to create an item manager for an existing `Organizations` collection:
+For example, to create a manager for an *existing* `Organizations` collection:
 
 ```javascript
 OrganizationsDataGrid = ReactMeteor.createClass({
-  mixins: [ItemManagerMixin],
+  mixins: [CollectionManagerMixin],
 
   templateName:   'OrganizationsDataGrid', // this will make an OrganizationsDataGrid template
   collectionName: 'Organizations', // this collection is assumed to already exist
-  itemSingular:   'organization', // how you want the collection to be referred to in the singular
-  itemPlural:     'organizations', // ditto for plural
+  singularName:   'organization', // how you want the collection to be referred to in the singular
+  pluralName:     'organizations', // ditto for plural
 
   // column config
   // field: the name of the field within your collection
