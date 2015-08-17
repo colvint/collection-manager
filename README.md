@@ -1,6 +1,10 @@
 # item-manager
 Meteor package which provides a client-side collection manager (CRUD)
 
+### Screenshot
+
+![Screenshot](https://dl.dropboxusercontent.com/s/uwlw21p0q5ysq7y/2015-08-17%20at%201.30%20AM%202x.png)
+
 # Installation
 
 - Pull this repo into your `packages` directory:
@@ -21,4 +25,3 @@ Navbar         = ReactBootstrap.Navbar;
 NavItem        = ReactBootstrap.NavItem;
 Panel          = ReactBootstrap.Panel;
 ```
-![Screenshot](https://dl.dropboxusercontent.com/s/uwlw21p0q5ysq7y/2015-08-17%20at%201.30%20AM%202x.png)
