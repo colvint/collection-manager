@@ -55,7 +55,7 @@ OrganizationsDataGrid = ReactMeteor.createClass({
 });
 ```
 
-## Use our new ReactJS component template
+## Use our new ReactJS component template in any Meteor template
 
 ```html
 <div>
