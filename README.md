@@ -13,11 +13,14 @@ Meteor package which provides a client-side collection manager (CRUD)
 
 `meteor add tauruscolvin:collection-manager`
 
-## Use the `CollectionManagerMixin` to create your own collection manager
+## Usage
 
 For example, to create a manager for an *existing* `Organizations` collection:
 
 ```javascript
+
+// in client/some-file.jsx
+
 ReactMeteor.createClass({
   mixins: [CollectionManagerMixin],
 
@@ -39,7 +42,9 @@ ReactMeteor.createClass({
 });
 ```
 
-## Use our new `OrganizationManager` in any Meteor template
+*Note the `.jsx` extension on the file above*
+
+## Now simply place the `OrganizationManager` into any Meteor template
 
 ```html
 <div>
