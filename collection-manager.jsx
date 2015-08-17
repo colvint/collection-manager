@@ -1,3 +1,15 @@
+var Button         = ReactBootstrap.Button,
+    ButtonGroup    = ReactBootstrap.ButtonGroup,
+    ButtonToolbar  = ReactBootstrap.ButtonToolbar,
+    DropdownButton = ReactBootstrap.DropdownButton,
+    Input          = ReactBootstrap.Input,
+    MenuItem       = ReactBootstrap.MenuItem,
+    Modal          = ReactBootstrap.Modal,
+    Nav            = ReactBootstrap.Nav,
+    Navbar         = ReactBootstrap.Navbar,
+    NavItem        = ReactBootstrap.NavItem,
+    Panel          = ReactBootstrap.Panel;
+
 var ColumnFilter = ReactMeteor.createClass({
   render: function () {
     var filterWidget,
