@@ -11,7 +11,7 @@ Meteor package which provides a client-side collection manager (CRUD)
   - `cd path/to/you/application/packages`
   - `git clone git@github.com:colvint/item-manager.git`
 - Run `meteor add tauruscolvin:item-manager`
-- Add this file to a file within your `client/lib` directory:
+- Add this code to a file within your `client/lib` directory:
 
 ```javascript
 Button         = ReactBootstrap.Button;
