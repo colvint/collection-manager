@@ -17,7 +17,7 @@ Meteor package which provides a client-side collection manager (CRUD)
 
 For example, to create a manager for an *existing* `Organizations` collection:
 
-```javascript
+~~~js
 
 // in client/some-file.jsx
 
@@ -40,7 +40,7 @@ ReactMeteor.createClass({
     {field: 'memberCount', label: 'Members', type: 'number'}
   ]
 });
-```
+~~~
 
 *Note the `.jsx` extension on the file above*
 
