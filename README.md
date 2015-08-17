@@ -1,7 +1,7 @@
 # item-manager
 Meteor package which provides a client-side collection manager (CRUD)
 
-# Installation (these instructions will get cleaner once this is deployed to Atmosphere)
+# Installation
 
 - Pull this repo into your `packages` directory:
   - `cd path/to/you/application/packages`
