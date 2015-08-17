@@ -119,7 +119,7 @@ var Paginator = ReactMeteor.createClass({
 
 var PageSizer = ReactMeteor.createClass({
   render: function () {
-    var countOptions = [2, 10, 25, 50, 100];
+    var countOptions = [10, 25, 50, 100];
 
     return (
       <p>
