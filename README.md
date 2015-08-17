@@ -1,9 +1,10 @@
 # collection-manager
 Meteor package which provides a client-side collection manager (CRUD)
 
-### Screenshot
-
 ![Screenshot](https://dl.dropboxusercontent.com/s/zen9ueyf0g39tkc/2015-08-17%20at%202.02%20AM%202x.png)
+
+# Example App
+[Example app](https://github.com/colvint/collection-manager-example)
 
 # Installation
 
