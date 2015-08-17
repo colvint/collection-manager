@@ -3,7 +3,7 @@ Meteor package which provides a client-side collection manager (CRUD)
 
 ### Screenshot
 
-![Screenshot](https://dl.dropboxusercontent.com/s/uwlw21p0q5ysq7y/2015-08-17%20at%201.30%20AM%202x.png)
+![Screenshot](https://dl.dropboxusercontent.com/s/zen9ueyf0g39tkc/2015-08-17%20at%202.02%20AM%202x.png)
 
 # Installation
 
