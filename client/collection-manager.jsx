@@ -8,14 +8,18 @@ var Button         = ReactBootstrap.Button,
     Nav            = ReactBootstrap.Nav,
     Navbar         = ReactBootstrap.Navbar,
     NavItem        = ReactBootstrap.NavItem,
-    Panel          = ReactBootstrap.Panel;
+    Panel          = ReactBootstrap.Panel,
+    ProgressBar    = ReactBootstrap.ProgressBar,
+    TabbedArea     = ReactBootstrap.TabbedArea,
+    TabPane        = ReactBootstrap.TabPane,
+    Table          = ReactBootstrap.Table;
 
 var ColumnFilter = ReactMeteor.createClass({
   render: function () {
     var filterWidget,
         fieldSchema = this.props.fieldSchema;
 
-    if (fieldSchema.type == 'number') {
+    if (fieldSchema.type === 'number') {
       filterWidget = (
         <Input
           type="range"
@@ -49,7 +53,7 @@ var Cell = ReactMeteor.createClass({
         value       = item[this.props.fieldName],
         content;
 
-    if (fieldSchema.type == 'url') {
+    if (fieldSchema.type === 'url') {
       content = <a href={value}>{value}</a>;
     } else {
       content = value;
@@ -66,7 +70,7 @@ var GridInfo = ReactMeteor.createClass({
       var fromIndex     = this.props.fromIndex,
           toIndex       = this.props.toIndex,
           itemCount     = this.props.itemCount,
-          gridIsEmpty   = (itemCount == 0),
+          gridIsEmpty   = (itemCount === 0),
           label;
 
       if (gridIsEmpty) {
@@ -113,10 +117,10 @@ var Paginator = ReactMeteor.createClass({
         {_.range(0, pageCount).map(function (page, i) {
           return (
             <NavItem
-              className={classNames({'active': (currentPage == page)})}
+              className={classNames({'active': (currentPage === page)})}
               key={i}
               eventKey={page}
-              disabled={page == currentPage}>
+              disabled={page === currentPage}>
               {page + 1}
             </NavItem>
           );
@@ -159,7 +163,7 @@ var SelectedItemActionList = ReactMeteor.createClass({
   render: function () {
     var selectedItems = this.props.selectedItems,
         title         = `${selectedItems.length} selected`,
-        disabled      = (selectedItems.length == 0);
+        disabled      = (selectedItems.length === 0);
 
     return (
       <DropdownButton disabled={disabled} title={title}>
@@ -215,7 +219,7 @@ var NewModal = ReactMeteor.createClass({
 
   invalidFieldFor: function (fieldName) {
     return _.find(this.validationContext().invalidKeys(), function (invalidKey) {
-      return invalidKey.name == fieldName;
+      return invalidKey.name === fieldName;
     });
   },
 
@@ -234,8 +238,6 @@ var NewModal = ReactMeteor.createClass({
   },
 
   onSave: function () {
-    var self = this;
-
     if (this.isValid()) {
       this.props.collectionService.call(this.props.createMethod, this.state, function (error, result) {
         if (error) {
@@ -297,14 +299,186 @@ var NewModal = ReactMeteor.createClass({
   }
 });
 
+var ImportPreview = ReactMeteor.createClass({
+
+  render: function () {
+    var self        = this,
+        previewSize = this.props.previewSize;
+
+    return (
+      <Table className="table table-condensed">
+        <thead>
+          <tr>
+            {_.map(self.props.schema.schema(), function (fieldSchema, fieldName) {
+              return (
+                <th key={fieldName}>{fieldName}</th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {_.map(_.first(self.props.previewObjects, previewSize), function (obj, i) {
+            return (
+              <tr key={i}>
+                {_.map(self.props.schema.schema(), function (fieldSchema, fieldName) {
+                  return (
+                    <td key={fieldName}>{obj[fieldName]}</td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    );
+  }
+});
+
+var ImportModal = ReactMeteor.createClass({
+  mixins: [React.addons.LinkedStateMixin],
+
+  initialState: {
+    processing: false,
+    percentImported: 0,
+    parseErrors: [],
+    validObjects: [],
+    invalidObjects: [],
+
+    config: {
+      delimiter: "",	// auto-detect
+      newline: "",	// auto-detect
+      header: true,
+      dynamicTyping: false,
+      preview: 0,
+      encoding: "",
+      worker: false,
+      comments: true,
+      step: undefined,
+      complete: undefined,
+      error: undefined,
+      download: false,
+      skipEmptyLines: true,
+      chunk: undefined,
+      fastMode: undefined,
+      beforeFirstChunk: undefined
+    }
+  },
+
+  getInitialState: function () {
+    return this.initialState;
+  },
+
+  onHide: function () {
+    this.replaceState(this.initialState);
+    this.props.onHide.call();
+  },
+
+  onFileChosen: function (event) {
+    var file = _.first(event.target.files);
+
+    Papa.parse(file, _.extend(this.state.config, {
+      complete: this.onFileParsed
+    }));
+  },
+
+  onFileParsed: function (results, file) {
+    var self           = this,
+        validObjects   = [],
+        invalidObjects = [];
+
+    _.each(results.data, function (parsedObject, i) {
+      if (self.validationContext().validate(parsedObject)) {
+        validObjects.push(parsedObject);
+      } else {
+        invalidObjects.push(parsedObject);
+      }
+    });
+
+    this.setState({
+      validObjects: validObjects,
+      invalidObjects: invalidObjects
+    });
+  },
+
+  validationContext: function () {
+    return this.props.schema.namedContext("importForm");
+  },
+
+  processImports: function () {
+    var importableObjects = this.state.validObjects,
+        self              = this;
+
+    _.each(importableObjects, function (obj, i) {
+      self.props.collectionService.call(self.props.createMethod, obj, function (error, result) {
+        if (error) {
+          console.log(error);
+        } else {
+          self.setState({
+            percentImported: parseInt(((i + 1) / importableObjects.length) * 100)
+          });
+        }
+      });
+    });
+    this.onHide();
+  },
+
+  render: function () {
+    var self                = this,
+        importableObjects   = this.state.validObjects,
+        unImportableObjects = this.state.invalidObjects;
+
+    return (
+      <Modal show={this.props.show} onHide={this.onHide}>
+        <Modal.Header closeButton>
+          <Modal.Title>Import {this.props.objectName}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form>
+            <Input
+              type="file"
+              label="Choose an Import File"
+              help={'The file should be a CSV containing the ' + this.props.objectName + ' to import'}
+              onChange={this.onFileChosen} />
+          </form>
+          <TabbedArea defaultActiveKey={1}>
+            <TabPane eventKey={1} tab={importableObjects.length + ' importable'}>
+              <ImportPreview
+                previewObjects={importableObjects}
+                previewSize={5}
+                schema={self.props.schema}/>
+            </TabPane>
+            <TabPane eventKey={2} tab={unImportableObjects.length + ' un-importable'}>
+              <ImportPreview
+                previewObjects={unImportableObjects}
+                previewSize={5}
+                schema={self.props.schema}/>
+            </TabPane>
+          </TabbedArea>
+          <ProgressBar now={this.state.percentImported} />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button onClick={this.onHide}>Close</Button>
+          <Button
+            onClick={this.processImports}
+            bsStyle='primary'
+            disabled={this.state.validObjects.length === 0 || this.state.processing}>
+            Import {this.state.validObjects.length} {this.props.objectName}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    );
+  }
+});
+
 CollectionManagerMixin = {
   getInitialState: function () {
     return {
-      currentPage:    0,
-      perPage:        10,
-      itemFilter:     {},
-      selectedItems:  [],
-      newModalIsOpen: false
+      currentPage:       0,
+      perPage:           10,
+      itemFilter:        {},
+      selectedItems:     [],
+      newModalIsOpen:    false,
+      importModalIsOpen: false
     };
   },
 
@@ -334,7 +508,7 @@ CollectionManagerMixin = {
         currentFilter = this.state.itemFilter,
         newFilter;
 
-    if (schema.type == 'number') {
+    if (schema.type === 'number') {
       newFilter = {$lte: parseInt(filterVal)};
     } else {
       newFilter = new RegExp(filterVal, 'i');
@@ -349,7 +523,7 @@ CollectionManagerMixin = {
     var selectedItems = this.state.selectedItems,
         itemPosition  = selectedItems.indexOf(itemId);
 
-    if (itemPosition == -1) {
+    if (itemPosition === -1) {
       // select the  item
       selectedItems.push(itemId);
     } else {
@@ -405,6 +579,14 @@ CollectionManagerMixin = {
     this.setState({newModalIsOpen: false})
   },
 
+  openImportModal: function () {
+    this.setState({importModalIsOpen: true});
+  },
+
+  closeImportModal: function () {
+    this.setState({importModalIsOpen: false})
+  },
+
   render: function () {
     var currentPage   = this.state.currentPage,
         perPage       = this.state.perPage,
@@ -434,7 +616,7 @@ CollectionManagerMixin = {
                     <SelectedItemActionList selectedItems={selectedItems} />
                   </ButtonGroup>
                   <ButtonGroup className="pull-right">
-                    <Button bsStyle="info">Import</Button>
+                    <Button bsStyle="info" onClick={self.openImportModal}>Import</Button>
                     <Button bsStyle="primary" onClick={self.openNewModal}>New</Button>
                   </ButtonGroup>
                   <NewModal
@@ -443,12 +625,18 @@ CollectionManagerMixin = {
                     objectName={self.documentSingular}
                     schema={self.schema}
                     collectionService={self.collectionService}
-                    createMethod={self.createMethod}
-                  />
+                    createMethod={self.createMethod} />
+                  <ImportModal
+                    show={self.state.importModalIsOpen}
+                    onHide={self.closeImportModal}
+                    objectName={self.documentPlural}
+                    schema={self.schema}
+                    collectionService={self.collectionService}
+                    createMethod={self.createMethod} />
                 </ButtonToolbar>
               </div>
               <div className="table-responsive">
-                <table className="table table-bordered table-striped table-hover">
+                <Table className="table table-bordered table-striped table-hover">
                   <thead>
                     <tr>
                       <th className="selector-control">
@@ -490,7 +678,7 @@ CollectionManagerMixin = {
                       );
                     })}
                   </tbody>
-                </table>
+                </Table>
               </div>
             </Panel>
           </div>
