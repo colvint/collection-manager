@@ -213,18 +213,24 @@ var NewModal = ReactMeteor.createClass({
     return this.validationContext().isValid();
   },
 
+  invalidFieldFor: function (fieldName) {
+    return _.find(this.validationContext().invalidKeys(), function (invalidKey) {
+      return invalidKey.name == fieldName;
+    });
+  },
+
   validationState: function (fieldName) {
     this.validate();
 
-    var invalidField = _.find(this.validationContext().invalidKeys(), function (invalidKey) {
-      return invalidKey.name == fieldName;
-    });
-
-    if (invalidField) {
+    if (this.invalidFieldFor(fieldName)) {
       return 'error';
     } else {
       return 'success';
     }
+  },
+
+  validationMessage: function (fieldName) {
+    return this.validationContext().keyErrorMessage(fieldName);
   },
 
   onSave: function () {
@@ -270,6 +276,8 @@ var NewModal = ReactMeteor.createClass({
                   placeholder={'Enter the ' + self.props.objectName + ' ' + fieldName}
                   valueLink={self.linkState(fieldName)}
                   bsStyle={self.validationState(fieldName)}
+                  help={self.validationMessage(fieldName)}
+                  hasFeedback
                 />
               );
             })}
