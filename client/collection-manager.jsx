@@ -148,7 +148,8 @@ CollectionManager = {
                   <ReactBootstrap.ButtonToolbar>
                     <ReactBootstrap.ButtonGroup>
                       <CollectionManager.ListActionMenu
-                        selectedItemIds={component.state.selectedItemIds}/>
+                        selectedItemIds={component.state.selectedItemIds}
+                        documentType={component.documentPlural}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">
                       <ReactBootstrap.Button
@@ -161,8 +162,7 @@ CollectionManager = {
                         onHide={component.toggleImportModal.bind(component, false)}
                         objectName={component.documentPlural}
                         schema={component.schema}
-                        connection={component.connection}
-                        actionMethod={component.createMethod}/>
+                        connection={component.connection}/>
                       <ReactBootstrap.Button
                         bsStyle="primary"
                         onClick={component.toggleNewModal.bind(component, true)}>
@@ -173,8 +173,7 @@ CollectionManager = {
                         onHide={component.toggleNewModal.bind(component, false)}
                         objectName={component.documentSingular}
                         schema={component.schema}
-                        connection={component.connection}
-                        actionMethod={component.createMethod}/>
+                        collection={component.collection}/>
                     </ReactBootstrap.ButtonGroup>
                   </ReactBootstrap.ButtonToolbar>
                 </div>
@@ -227,8 +226,8 @@ CollectionManager = {
                                 onHide={component.toggleEditModal.bind(component, item._id, false)}
                                 objectName={component.documentSingular}
                                 schema={component.schema}
-                                connection={component.connection}
-                                actionMethod={component.updateMethod}
+                                collection={component.collection}
+                                itemId={item._id}
                                 item={item}/>
                             </td>
                           </tr>

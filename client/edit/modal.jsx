@@ -2,7 +2,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
 
   isNewItem: function () {
-    return typeof(this.props.item) === 'undefined';
+    return typeof(this.props.itemId) === 'undefined';
   },
 
   getInitialState: function () {
@@ -80,18 +80,16 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   create: function () {
-    this.props.connection.call(
-      this.props.actionMethod,
+    this.props.collection.insert(
       this.state,
       this.afterSave
     );
   },
 
   update: function () {
-    this.props.connection.call(
-      this.props.actionMethod,
-      this.props.item._id,
-      _.omit(this.state, '_id'),
+    this.props.collection.update(
+      this.props.itemId,
+      {$set: this.state},
       this.afterSave
     );
   },
