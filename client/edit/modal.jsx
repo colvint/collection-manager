@@ -1,59 +1,31 @@
 CollectionManager.EditModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
 
+  isNewItem: function () {
+    return typeof(this.props.item) === 'undefined';
+  },
+
   getInitialState: function () {
-    return {};
-  },
-
-  onHide: function () {
-    this.replaceState({});
-    this.props.onHide.call();
-  },
-
-  validationContext: function () {
-    return this.props.schema.namedContext("newForm");
-  },
-
-  validate: function () {
-    return this.validationContext().validate(this.state);
-  },
-
-  isValid: function () {
-    return this.validationContext().isValid();
-  },
-
-  invalidFieldFor: function (fieldName) {
-    return _.find(this.validationContext().invalidKeys(), function (invalidKey) {
-      return invalidKey.name === fieldName;
-    });
-  },
-
-  validationState: function (fieldName) {
-    this.validate();
-
-    if (this.invalidFieldFor(fieldName)) {
-      return 'error';
+    if (this.isNewItem()) {
+      return {};
     } else {
-      return 'success';
+      return _.pick(
+        this.props.item,
+        _.keys(this.props.schema.schema())
+      );
     }
   },
 
-  validationMessage: function (fieldName) {
-    return this.validationContext().keyErrorMessage(fieldName);
-  },
+  modalTitle: function () {
+    var actionVerb;
 
-  onSave: function () {
-    if (this.isValid()) {
-      this.props.collectionService.call(this.props.createMethod, this.state, function (error, result) {
-        if (error) {
-          console.log(error);
-        } else {
-          self.onHide();
-        }
-      });
+    if (this.isNewItem()) {
+      actionVerb = 'New';
     } else {
-      console.error("The thing you tried to save isn't valid -- save blocked.");
+      actionVerb = 'Edit';
     }
+
+    return actionVerb + ' ' + this.props.objectName;
   },
 
   inputTypeFor: function (fieldSchemaType) {
@@ -64,41 +36,115 @@ CollectionManager.EditModal = ReactMeteor.createClass({
     }
   },
 
+  validationContext: function () {
+    var contextKey;
+
+    if (this.isNewItem()) {
+      contextKey = 'new-modal';
+    } else {
+      contextKey = "edit-modal-" + this.props.item._id;
+    }
+
+    return this.props.schema.namedContext(contextKey);
+  },
+
+  validationMessage: function (fieldName) {
+    return this.validationContext().keyErrorMessage(fieldName);
+  },
+
+  validationState: function (fieldName) {
+    this.validationContext().validate(this.state);
+
+    var invalidField = _.find(this.validationContext().invalidKeys(),
+      function (invalidKey) {
+        return invalidKey.name === fieldName;
+      }
+    );
+
+    return invalidField ? 'error' : 'success';
+  },
+
+  onHide: function () {
+    if (this.isNewItem()) {
+      this.replaceState({});
+    }
+    this.props.onHide();
+  },
+
+  afterSave: function (error, result) {
+    if (error) {
+      console.log(error);
+    } else {
+      this.onHide();
+    }
+  },
+
+  create: function () {
+    this.props.connection.call(
+      this.props.actionMethod,
+      this.state,
+      this.afterSave
+    );
+  },
+
+  update: function () {
+    this.props.connection.call(
+      this.props.actionMethod,
+      this.props.item._id,
+      _.omit(this.state, '_id'),
+      this.afterSave
+    );
+  },
+
+  saveItem: function () {
+    if (this.isNewItem()) {
+      this.create();
+    } else {
+      this.update();
+    }
+  },
+
   render: function () {
-    var self = this;
+    var component = this,
+        placeholder;
 
     return (
-      <ReactBootstrap.Modal show={this.props.show} onHide={this.onHide}>
+      <ReactBootstrap.Modal
+        show={component.props.show}
+        onHide={component.props.onHide}>
         <ReactBootstrap.Modal.Header closeButton>
           <ReactBootstrap.Modal.Title>
-            New {this.props.objectName}
+            {component.modalTitle()}
           </ReactBootstrap.Modal.Title>
         </ReactBootstrap.Modal.Header>
-
         <ReactBootstrap.Modal.Body>
           <form>
-            {_.map(this.props.schema.schema(), function (fieldSchema, fieldName) {
+            {_.map(component.props.schema.schema(), function (fieldSchema, fieldName) {
+              placeholder = 'Enter the ' + component.props.objectName + ' ' + fieldName;
+
               return (
                 <ReactBootstrap.Input
                   key={fieldName}
-                  type={self.inputTypeFor(fieldSchema)}
+                  type={component.inputTypeFor(fieldSchema)}
                   label={fieldSchema.label}
-                  placeholder={'Enter the ' + self.props.objectName + ' ' + fieldName}
-                  valueLink={self.linkState(fieldName)}
-                  bsStyle={self.validationState(fieldName)}
-                  help={self.validationMessage(fieldName)}
+                  placeholder={placeholder}
+                  valueLink={component.linkState(fieldName)}
+                  bsStyle={component.validationState(fieldName)}
+                  help={component.validationMessage(fieldName)}
                   hasFeedback/>
               );
             })}
           </form>
         </ReactBootstrap.Modal.Body>
-
         <ReactBootstrap.Modal.Footer>
-          <ReactBootstrap.Button onClick={this.onHide}>Close</ReactBootstrap.Button>
           <ReactBootstrap.Button
-            onClick={this.onSave}
+            onClick={component.props.onHide}>
+            Close
+          </ReactBootstrap.Button>
+          <ReactBootstrap.Button
+            onClick={component.saveItem}
             bsStyle='primary'
-            disabled={!this.isValid()}>
+            disabled={!component.validationContext().isValid()}>
             Save
           </ReactBootstrap.Button>
         </ReactBootstrap.Modal.Footer>

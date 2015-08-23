@@ -1,27 +1,23 @@
 var ImportPreviewer = ReactMeteor.createClass({
   render: function () {
-    var self        = this,
-        previewSize = this.props.previewSize;
+    var importPreviewer = this,
+        previewSize     = this.props.previewSize;
 
     return (
       <ReactBootstrap.Table className="table table-condensed">
         <thead>
           <tr>
-            {_.map(self.props.schema.schema(), function (fieldSchema, fieldName) {
-              return (
-                <th key={fieldName}>{fieldName}</th>
-              );
+            {_.map(importPreviewer.props.schema.schema(), function (fieldSchema, fieldName) {
+              return (<th key={fieldName}>{fieldName}</th>);
             })}
           </tr>
         </thead>
         <tbody>
-          {_.map(_.first(self.props.previewObjects, previewSize), function (obj, i) {
+          {_.map(_.first(importPreviewer.props.previewObjects, previewSize), function (obj, i) {
             return (
               <tr key={i}>
-                {_.map(self.props.schema.schema(), function (fieldSchema, fieldName) {
-                  return (
-                    <td key={fieldName}>{obj[fieldName]}</td>
-                  );
+                {_.map(importPreviewer.props.schema.schema(), function (fieldSchema, fieldName) {
+                  return (<td key={fieldName}>{obj[fieldName]}</td>);
                 })}
               </tr>
             );
@@ -107,7 +103,7 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
         self              = this;
 
     _.each(importableObjects, function (obj, i) {
-      self.props.collectionService.call(self.props.createMethod, obj, function (error, result) {
+      self.props.connection.call(self.props.actionMethod, obj, function (error, result) {
         if (error) {
           console.log(error);
         } else {

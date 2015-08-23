@@ -1,8 +1,7 @@
 CollectionManager.ListActionMenu = ReactMeteor.createClass({
   render: function () {
-    var selectedItems = this.props.selectedItems,
-        title         = `${selectedItems.length} selected`,
-        disabled      = (selectedItems.length === 0);
+    var title    = `${this.props.selectedItemIds.length} selected`,
+        disabled = (this.props.selectedItemIds.length === 0);
 
     return (
       <ReactBootstrap.DropdownButton

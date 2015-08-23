@@ -5,14 +5,15 @@ CollectionManager = {
         currentPage:       0,
         perPage:           10,
         itemFilter:        {},
-        selectedItems:     [],
+        selectedItemIds:   [],
+        importModalIsOpen: false,
         newModalIsOpen:    false,
-        importModalIsOpen: false
+        editModalToggles:  {}
       };
     },
 
     getMeteorState: function () {
-      var cursor     = window[this.collectionName].find(this.state.itemFilter, {}),
+      var cursor     = this.collection.find(this.state.itemFilter, {}),
           items      = cursor.fetch(),
           itemCount  = cursor.count();
 
@@ -48,19 +49,20 @@ CollectionManager = {
       this.setState({itemFilter: currentFilter});
     },
 
-    toggleSelect: function (itemId) {
-      var selectedItems = this.state.selectedItems,
-          itemPosition  = selectedItems.indexOf(itemId);
+    onItemSelected: function (itemId) {
+      var selectedItemIds = this.state.selectedItemIds,
+          itemPosition    = this.state.selectedItemIds.indexOf(itemId);
 
       if (itemPosition === -1) {
         // select the  item
-        selectedItems.push(itemId);
+        selectedItemIds.push(itemId);
       } else {
         // de-select the item
-        selectedItems.splice(itemPosition, 1);
+        selectedItemIds.splice(itemPosition, 1);
       }
-
-      this.setState({selectedItems: selectedItems});
+      this.setState({
+        selectedItemIds: selectedItemIds
+      });
     },
 
     itemSelectorChanged: function (selectionCommand) {
@@ -79,61 +81,64 @@ CollectionManager = {
 
     selectAll: function () {
       this.setState({
-        selectedItems: _.pluck(this.state.items, '_id')
+        selectedItemIds: _.pluck(this.state.items, '_id')
       });
     },
 
     selectNone: function () {
       this.setState({
-        selectedItems: []
+        selectedItemIds: []
       });
     },
 
     selectInverse: function () {
       var inverseSelection = _.difference(
         _.pluck(this.state.items, '_id'),
-        this.state.selectedItems
+        this.state.selectedItemIds
       );
 
       this.setState({
-        selectedItems: inverseSelection
+        selectedItemIds: inverseSelection
       });
     },
 
-    openNewModal: function () {
-      this.setState({newModalIsOpen: true});
+    toggleEditModal: function (itemId, flag) {
+      var editModalToggles = this.state.editModalToggles,
+          modalToggle      = {};
+
+      modalToggle[itemId] = flag;
+
+      editModalToggles = React.addons.update(editModalToggles, {
+        $merge: modalToggle
+      });
+
+      this.setState({
+        editModalToggles: editModalToggles
+      });
     },
 
-    closeNewModal: function () {
-      this.setState({newModalIsOpen: false})
+    toggleImportModal: function (open) {
+      this.setState({importModalIsOpen: open});
     },
 
-    openImportModal: function () {
-      this.setState({importModalIsOpen: true});
-    },
-
-    closeImportModal: function () {
-      this.setState({importModalIsOpen: false})
+    toggleNewModal: function (open) {
+      this.setState({newModalIsOpen: open});
     },
 
     render: function () {
-      var currentPage          = this.state.currentPage,
-          perPage              = this.state.perPage,
-          itemCount            = this.state.itemCount,
-          fromIndex            = perPage * currentPage,
-          toIndex              = Math.min(fromIndex + perPage - 1, itemCount - 1),
-          shownItems           = this.state.items.slice(fromIndex, toIndex + 1),
-          selectedItems        = this.state.selectedItems,
-          selectorControlStyle = {textAlign: 'center'},
-          self                 = this;
+      var component            = this,
+          fromIndex            = component.state.perPage * component.state.currentPage,
+          toIndex              = Math.min(fromIndex + component.state.perPage - 1, component.state.itemCount - 1),
+          shownItems           = component.state.items.slice(fromIndex, toIndex + 1),
+          selectorControlStyle = {textAlign: 'center'};
 
       return (
         <div className="form-inline">
           <div className="row">
             <div className="col-md-12">
               <CollectionManager.ListPageSizer
-                perPage={perPage}
-                perPageChanged={self.perPageChanged}/>
+                perPage={component.state.perPage}
+                perPageChanged={component.perPageChanged}/>
             </div>
           </div>
           <div className="row">
@@ -143,34 +148,34 @@ CollectionManager = {
                   <ReactBootstrap.ButtonToolbar>
                     <ReactBootstrap.ButtonGroup>
                       <CollectionManager.ListActionMenu
-                        selectedItems={selectedItems}/>
+                        selectedItemIds={component.state.selectedItemIds}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">
                       <ReactBootstrap.Button
                         bsStyle="info"
-                        onClick={self.openImportModal}>
+                        onClick={component.toggleImportModal.bind(component, true)}>
                         Import
                       </ReactBootstrap.Button>
+                      <CollectionManager.ImportModal
+                        show={component.state.importModalIsOpen}
+                        onHide={component.toggleImportModal.bind(component, false)}
+                        objectName={component.documentPlural}
+                        schema={component.schema}
+                        connection={component.connection}
+                        actionMethod={component.createMethod}/>
                       <ReactBootstrap.Button
                         bsStyle="primary"
-                        onClick={self.openNewModal}>
+                        onClick={component.toggleNewModal.bind(component, true)}>
                         New
                       </ReactBootstrap.Button>
+                      <CollectionManager.EditModal
+                        show={component.state.newModalIsOpen}
+                        onHide={component.toggleNewModal.bind(component, false)}
+                        objectName={component.documentSingular}
+                        schema={component.schema}
+                        connection={component.connection}
+                        actionMethod={component.createMethod}/>
                     </ReactBootstrap.ButtonGroup>
-                    <CollectionManager.EditModal
-                      show={self.state.newModalIsOpen}
-                      onHide={self.closeNewModal}
-                      objectName={self.documentSingular}
-                      schema={self.schema}
-                      collectionService={self.collectionService}
-                      createMethod={self.createMethod}/>
-                    <CollectionManager.ImportModal
-                      show={self.state.importModalIsOpen}
-                      onHide={self.closeImportModal}
-                      objectName={self.documentPlural}
-                      schema={self.schema}
-                      collectionService={self.collectionService}
-                      createMethod={self.createMethod}/>
                   </ReactBootstrap.ButtonToolbar>
                 </div>
                 <div className="table-responsive">
@@ -179,14 +184,14 @@ CollectionManager = {
                       <tr>
                         <th style={selectorControlStyle}>
                           <CollectionManager.ListItemSelector
-                            onSelect={self.itemSelectorChanged}/>
+                            onSelect={component.itemSelectorChanged}/>
                         </th>
-                        {_.map(self.schema.schema(), function (schema, name) {
+                        {_.map(component.schema.schema(), function (schema, name) {
                           return (
                             <th key={name}>
                               <CollectionManager.ListColumnFilter
                                 fieldSchema={schema}
-                                onChange={self.filterChangedFor.bind(self, name, schema)}/>
+                                onChange={component.filterChangedFor.bind(component, name, schema)}/>
                             </th>
                           );
                         })}
@@ -200,10 +205,10 @@ CollectionManager = {
                             <td style={selectorControlStyle}>
                               <ReactBootstrap.Input
                                 type="checkbox"
-                                checked={_.contains(selectedItems, item._id)}
-                                onChange={self.toggleSelect.bind(self, item._id)}/>
+                                checked={_.contains(component.state.selectedItemIds, item._id)}
+                                onChange={component.onItemSelected.bind(component, item._id)}/>
                             </td>
-                            {_.map(self.schema.schema(), function (schema, name) {
+                            {_.map(component.schema.schema(), function (schema, name) {
                               return (
                                 <CollectionManager.ListCell
                                   key={name}
@@ -213,7 +218,18 @@ CollectionManager = {
                               );
                             })}
                             <td>
-                              <ReactBootstrap.Button>Manage</ReactBootstrap.Button>
+                              <ReactBootstrap.Button
+                                onClick={component.toggleEditModal.bind(component, item._id, true)}>
+                                Edit
+                              </ReactBootstrap.Button>
+                              <CollectionManager.EditModal
+                                show={component.state.editModalToggles[item._id]}
+                                onHide={component.toggleEditModal.bind(component, item._id, false)}
+                                objectName={component.documentSingular}
+                                schema={component.schema}
+                                connection={component.connection}
+                                actionMethod={component.updateMethod}
+                                item={item}/>
                             </td>
                           </tr>
                         );
@@ -229,14 +245,14 @@ CollectionManager = {
               <CollectionManager.ListInfo
                 fromIndex={fromIndex}
                 toIndex={toIndex}
-                itemCount={itemCount}/>
+                itemCount={component.state.itemCount}/>
             </div>
             <div className="col-md-6">
               <CollectionManager.ListPaginator
-                itemCount={itemCount}
-                perPage={perPage}
-                currentPage={currentPage}
-                onPageChange={self.setCurrentPage}/>
+                itemCount={component.state.itemCount}
+                perPage={component.state.perPage}
+                currentPage={component.state.currentPage}
+                onPageChange={component.setCurrentPage}/>
             </div>
           </div>
         </div>
