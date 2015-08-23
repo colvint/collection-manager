@@ -149,7 +149,8 @@ CollectionManager = {
                     <ReactBootstrap.ButtonGroup>
                       <CollectionManager.ListActionMenu
                         selectedItemIds={component.state.selectedItemIds}
-                        documentType={component.documentPlural}/>
+                        connection={component.connection}
+                        archiveMethod={component.archiveMethod}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">
                       <ReactBootstrap.Button
@@ -162,7 +163,7 @@ CollectionManager = {
                         onHide={component.toggleImportModal.bind(component, false)}
                         objectName={component.documentPlural}
                         schema={component.schema}
-                        connection={component.connection}/>
+                        collection={component.collection}/>
                       <ReactBootstrap.Button
                         bsStyle="primary"
                         onClick={component.toggleNewModal.bind(component, true)}>

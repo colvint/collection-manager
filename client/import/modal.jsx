@@ -103,7 +103,7 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
         self              = this;
 
     _.each(importableObjects, function (obj, i) {
-      self.props.connection.call(self.props.actionMethod, obj, function (error, result) {
+      self.props.collection.insert(obj, function (error, result) {
         if (error) {
           console.log(error);
         } else {
