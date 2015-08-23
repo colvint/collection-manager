@@ -16,8 +16,16 @@ Package.onUse(function(api) {
 
   api.addFiles([
     'client/collection-manager.jsx',
-    'client/collection-manager.less'
+    'client/list/cell.jsx',
+    'client/list/column-filter.jsx',
+    'client/list/action-menu.jsx',
+    'client/list/info.jsx',
+    'client/list/item-selector.jsx',
+    'client/list/page-sizer.jsx',
+    'client/list/paginator.jsx',
+    'client/edit/modal.jsx',
+    'client/import/modal.jsx'
   ], 'client');
 
-  api.export('CollectionManagerMixin', 'client');
+  api.export('CollectionManager', 'client');
 });
