@@ -125,6 +125,10 @@ CollectionManager = {
       this.setState({newModalIsOpen: open});
     },
 
+    onItemsArchived: function (error, result) {
+      this.setState({selectedItemIds: []});
+    },
+
     render: function () {
       var component            = this,
           fromIndex            = component.state.perPage * component.state.currentPage,
@@ -147,10 +151,11 @@ CollectionManager = {
                 <div className="panel-heading">
                   <ReactBootstrap.ButtonToolbar>
                     <ReactBootstrap.ButtonGroup>
-                      <CollectionManager.ListActionMenu
+                      <CollectionManager.SelectedItemsActionsMenu
                         selectedItemIds={component.state.selectedItemIds}
                         connection={component.connection}
-                        archiveMethod={component.archiveMethod}/>
+                        archiveMethod={component.archiveMethod}
+                        onActionCompleted={component.onItemsArchived}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">
                       <ReactBootstrap.Button
