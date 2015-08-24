@@ -1,10 +1,18 @@
 CollectionManager = {
   Mixin: {
     getInitialState: function () {
+      var itemFilter = {};
+
+      _.each(this.schema.schema(), function (fieldSchema, fieldName) {
+        if (typeof(fieldSchema.defaultValue) !== 'undefined') {
+          itemFilter[fieldName] = fieldSchema.defaultValue;
+        }
+      });
+
       return {
         currentPage:       0,
         perPage:           10,
-        itemFilter:        {},
+        itemFilter:        itemFilter,
         selectedItemIds:   [],
         importModalIsOpen: false,
         newModalIsOpen:    false,
@@ -125,10 +133,6 @@ CollectionManager = {
       this.setState({newModalIsOpen: open});
     },
 
-    onItemsArchived: function (error, result) {
-      this.setState({selectedItemIds: []});
-    },
-
     render: function () {
       var component            = this,
           fromIndex            = component.state.perPage * component.state.currentPage,
@@ -155,7 +159,8 @@ CollectionManager = {
                         selectedItemIds={component.state.selectedItemIds}
                         connection={component.connection}
                         archiveMethod={component.archiveMethod}
-                        onActionCompleted={component.onItemsArchived}/>
+                        activateMethod={component.activateMethod}
+                        onActionCompleted={component.selectNone}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">
                       <ReactBootstrap.Button
