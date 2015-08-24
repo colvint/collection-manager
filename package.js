@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tauruscolvin:collection-manager',
-  version: '0.0.9',
+  version: '0.0.10',
   summary: 'A drop-in collection manager for your client.',
   git: 'git@github.com:colvint/collection-manager.git',
   documentation: 'README.md'
@@ -16,8 +16,8 @@ Package.onUse(function(api) {
 
   api.addFiles([
     'client/collection-manager.jsx',
+    'client/shared/field.jsx',
     'client/list/cell.jsx',
-    'client/list/column-filter.jsx',
     'client/list/selected-items-actions-menu.jsx',
     'client/list/info.jsx',
     'client/list/item-selector.jsx',

@@ -7,7 +7,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
 
   getInitialState: function () {
     if (this.isNewItem()) {
-      return {};
+      return this.props.schema.clean({});
     } else {
       return _.pick(
         this.props.item,
@@ -26,14 +26,6 @@ CollectionManager.EditModal = ReactMeteor.createClass({
     }
 
     return actionVerb + ' ' + this.props.objectName;
-  },
-
-  inputTypeFor: function (fieldSchemaType) {
-    if (fieldSchemaType.regEx === SimpleSchema.RegEx.Url) {
-      return 'url';
-    } else {
-      return 'text';
-    }
   },
 
   validationContext: function () {
@@ -118,12 +110,11 @@ CollectionManager.EditModal = ReactMeteor.createClass({
         <ReactBootstrap.Modal.Body>
           <form>
             {_.map(component.props.schema.schema(), function (fieldSchema, fieldName) {
-              placeholder = 'Enter the ' + component.props.objectName + ' ' + fieldName;
-
               return (
-                <ReactBootstrap.Input
+                <CollectionManager.Field
                   key={fieldName}
-                  type={component.inputTypeFor(fieldSchema)}
+                  fieldSchema={fieldSchema}
+                  objectName={component.props.objectName}
                   label={fieldSchema.label}
                   placeholder={placeholder}
                   valueLink={component.linkState(fieldName)}

@@ -191,12 +191,15 @@ CollectionManager = {
                           <CollectionManager.ListItemSelector
                             onSelect={component.itemSelectorChanged}/>
                         </th>
-                        {_.map(component.schema.schema(), function (schema, name) {
+                        {_.map(component.schema.schema(), function (fieldSchema, fieldName) {
                           return (
-                            <th key={name}>
-                              <CollectionManager.ListColumnFilter
-                                fieldSchema={schema}
-                                onChange={component.filterChangedFor.bind(component, name, schema)}/>
+                            <th key={fieldName}>
+                              <CollectionManager.Field
+                                key={fieldName}
+                                fieldSchema={fieldSchema}
+                                objectName={component.documentSingular}
+                                placeholder={'Filter for ' + fieldName}
+                                onChange={component.filterChangedFor.bind(component, fieldName, fieldSchema)}/>
                             </th>
                           );
                         })}
