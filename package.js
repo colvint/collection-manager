@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tauruscolvin:collection-manager',
-  version: '0.0.10',
+  version: '0.0.11',
   summary: 'A drop-in collection manager for your client.',
   git: 'git@github.com:colvint/collection-manager.git',
   documentation: 'README.md'

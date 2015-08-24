@@ -7,6 +7,14 @@ CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
     );
   },
 
+  activateItems: function () {
+    this.props.connection.call(
+      this.props.activateMethod,
+      this.props.selectedItemIds,
+      this.props.onActionCompleted
+    );
+  },
+
   render: function () {
     var actionMenu = this,
         title      = `${actionMenu.props.selectedItemIds.length} selected`,
@@ -16,18 +24,13 @@ CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
       <ReactBootstrap.DropdownButton
         disabled={disabled}
         title={title}>
-        <ReactBootstrap.MenuItem>
-          Mass Update
-        </ReactBootstrap.MenuItem>
         <ReactBootstrap.MenuItem
           onSelect={actionMenu.archiveItems}>
           Archive
         </ReactBootstrap.MenuItem>
-
-        <ReactBootstrap.MenuItem divider />
-
-      <ReactBootstrap.MenuItem>
-          Custom Action 1
+        <ReactBootstrap.MenuItem
+          onSelect={actionMenu.activateItems}>
+          Activate
         </ReactBootstrap.MenuItem>
       </ReactBootstrap.DropdownButton>
     );
