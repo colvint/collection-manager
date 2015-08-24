@@ -158,8 +158,7 @@ CollectionManager = {
                       <CollectionManager.SelectedItemsActionsMenu
                         selectedItemIds={component.state.selectedItemIds}
                         connection={component.connection}
-                        archiveMethod={component.archiveMethod}
-                        activateMethod={component.activateMethod}
+                        statusChangeMethod={component.statusChangeMethod}
                         onActionCompleted={component.selectNone}/>
                     </ReactBootstrap.ButtonGroup>
                     <ReactBootstrap.ButtonGroup className="pull-right">

@@ -1,16 +1,9 @@
 CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
-  archiveItems: function () {
+  setStatus: function (newStatus) {
     this.props.connection.call(
-      this.props.archiveMethod,
+      this.props.statusChangeMethod,
       this.props.selectedItemIds,
-      this.props.onActionCompleted
-    );
-  },
-
-  activateItems: function () {
-    this.props.connection.call(
-      this.props.activateMethod,
-      this.props.selectedItemIds,
+      newStatus,
       this.props.onActionCompleted
     );
   },
@@ -25,11 +18,11 @@ CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
         disabled={disabled}
         title={title}>
         <ReactBootstrap.MenuItem
-          onSelect={actionMenu.archiveItems}>
+          onSelect={actionMenu.setStatus.bind(actionMenu, 'archived')}>
           Archive
         </ReactBootstrap.MenuItem>
         <ReactBootstrap.MenuItem
-          onSelect={actionMenu.activateItems}>
+          onSelect={actionMenu.setStatus.bind(actionMenu, 'active')}>
           Activate
         </ReactBootstrap.MenuItem>
       </ReactBootstrap.DropdownButton>
