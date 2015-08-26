@@ -23,7 +23,7 @@ var InputField = ReactMeteor.createClass({
     if (fieldSchema.regEx === SimpleSchema.RegEx.Url) {
       return 'url';
     } else if (fieldSchema.type === Number) {
-      return 'range';
+      return 'number';
     } else {
       return 'text';
     }
