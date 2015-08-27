@@ -43,16 +43,17 @@ CollectionManager = {
 
     filterChangedFor: function (field, schema, event) {
       var filterVal     = event.target.value,
-          currentFilter = this.state.itemFilter,
-          newFilter;
+          currentFilter = this.state.itemFilter;
 
-      if (schema.type === Number && Number(filterVal)) {
-        newFilter = {$lte: parseInt(filterVal)};
+      if (schema.type === Number) {
+        if (Number(filterVal)) {
+          currentFilter[field] = {$lte: Number(filterVal)};
+        } else {
+          delete currentFilter[field];
+        }
       } else {
-        newFilter = new RegExp(filterVal, 'i');
+        currentFilter[field] = new RegExp(filterVal, 'i');
       }
-
-      currentFilter[field] = newFilter;
 
       this.setState({itemFilter: currentFilter});
     },
