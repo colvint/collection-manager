@@ -46,7 +46,7 @@ CollectionManager = {
           currentFilter = this.state.itemFilter,
           newFilter;
 
-      if (schema.type === 'number') {
+      if (schema.type === Number && parseInt(filterVal)) {
         newFilter = {$lte: parseInt(filterVal)};
       } else {
         newFilter = new RegExp(filterVal, 'i');

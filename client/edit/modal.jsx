@@ -45,7 +45,9 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   validationState: function (fieldName) {
-    this.validationContext().validate(this.state);
+    var cleanedState = this.props.schema.clean(this.state);
+
+    this.validationContext().validate(cleanedState);
 
     var invalidField = _.find(this.validationContext().invalidKeys(),
       function (invalidKey) {
