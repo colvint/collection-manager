@@ -10,9 +10,9 @@ Package.onUse(function(api) {
   api.versionsFrom('1.1.0.3');
 
   api.use('tauruscolvin:meteor-react-bootstrap@0.0.1', 'client');
+  api.use('fortawesome:fontawesome@4.3.0', 'client');
   api.use('aldeed:simple-schema@1.3.3', 'client');
   api.use('tauruscolvin:papaparse@4.2.1', 'client');
-  api.use('fortawesome:fontawesome@4.3.0', 'client');
 
   api.addFiles([
     'client/collection-manager.jsx',

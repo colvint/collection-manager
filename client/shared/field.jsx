@@ -1,17 +1,22 @@
 var SelectField = ReactMeteor.createClass({
   render: function () {
     return (
-      <ReactBootstrap.Input
-        type="select"
-        {...this.props}>
-        {this.props.fieldSchema.allowedValues.map(function (allowedValue) {
-          return (
-            <option
-              key={allowedValue}
-              value={allowedValue}>
-              {allowedValue}
-            </option>
-          );
+      <ReactBootstrap.Input type="select" {...this.props}>
+        <option></option>
+        {this.props.selectOptions.map(function (selectOption) {
+          if (_.isObject(selectOption)) {
+            return (
+              <option key={selectOption._id} value={selectOption._id}>
+                {selectOption.name}
+              </option>
+            );
+          } else {
+            return (
+              <option key={selectOption} value={selectOption}>
+                {selectOption}
+              </option>
+            );
+          }
         })}
       </ReactBootstrap.Input>
     );
@@ -43,10 +48,20 @@ var InputField = ReactMeteor.createClass({
 
 CollectionManager.Field = ReactMeteor.createClass({
   render: function () {
-    if (typeof(this.props.fieldSchema.allowedValues) === 'undefined') {
-      return (<InputField {...this.props}/>);
+    var allowedValues = this.props.fieldSchema.allowedValues;
+
+    if (_.isFunction(allowedValues)) {
+      return (
+        <SelectField {...this.props}
+          selectOptions={allowedValues({listType: 'Object'})}/>
+      );
+    } else if (_.isArray(allowedValues)){
+      return (
+        <SelectField {...this.props}
+          selectOptions={allowedValues}/>
+      );
     } else {
-      return (<SelectField {...this.props}/>);
+      return (<InputField {...this.props}/>);
     }
   }
 });
