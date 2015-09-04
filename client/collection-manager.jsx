@@ -45,14 +45,16 @@ CollectionManager = {
       var filterVal     = event.target.value,
           currentFilter = this.state.itemFilter;
 
-      if (schema.type === Number) {
-        if (Number(filterVal)) {
-          currentFilter[field] = {$lte: Number(filterVal)};
-        } else {
-          delete currentFilter[field];
-        }
-      } else {
+      if (schema.type === Number && Number(filterVal)) {
+        currentFilter[field] = {$lte: Number(filterVal)};
+      } else if (schema.type === String && filterVal) {
         currentFilter[field] = new RegExp(filterVal, 'i');
+      } else if (schema.type instanceof Relation && filterVal) {
+        currentFilter[field] = filterVal;
+      } else if (schema.type === Boolean) {
+        currentFilter[field] = filterVal;
+      } else {
+        delete currentFilter[field];
       }
 
       this.setState({itemFilter: currentFilter});
