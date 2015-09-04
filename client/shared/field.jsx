@@ -1,22 +1,31 @@
+var RelationField = ReactMeteor.createClass({
+  render: function () {
+    return (
+      <ReactBootstrap.Input type="select" {...this.props}>
+        <option></option>
+        {this.props.selectOptions.map(function (selectOption) {
+          return (
+            <option key={selectOption._id} value={selectOption._id}>
+              {selectOption.name}
+            </option>
+          );
+        })}
+      </ReactBootstrap.Input>
+    );
+  }
+});
+
 var SelectField = ReactMeteor.createClass({
   render: function () {
     return (
       <ReactBootstrap.Input type="select" {...this.props}>
         <option></option>
         {this.props.selectOptions.map(function (selectOption) {
-          if (_.isObject(selectOption)) {
-            return (
-              <option key={selectOption._id} value={selectOption._id}>
-                {selectOption.name}
-              </option>
-            );
-          } else {
-            return (
-              <option key={selectOption} value={selectOption}>
-                {selectOption}
-              </option>
-            );
-          }
+          return (
+            <option key={selectOption} value={selectOption}>
+              {selectOption}
+            </option>
+          );
         })}
       </ReactBootstrap.Input>
     );
@@ -48,17 +57,17 @@ var InputField = ReactMeteor.createClass({
 
 CollectionManager.Field = ReactMeteor.createClass({
   render: function () {
-    var allowedValues = this.props.fieldSchema.allowedValues;
+    var fieldType = this.props.fieldSchema.type;
 
-    if (_.isFunction(allowedValues)) {
+    if (fieldType instanceof Relation) {
       return (
-        <SelectField {...this.props}
-          selectOptions={allowedValues({listType: 'Object'})}/>
+        <RelationField {...this.props}
+          selectOptions={fieldType.allowedOptions()}/>
       );
-    } else if (_.isArray(allowedValues)){
+    } else if (_.isArray(fieldType)) {
       return (
         <SelectField {...this.props}
-          selectOptions={allowedValues}/>
+          selectOptions={this.props.fieldSchema.allowedValues}/>
       );
     } else {
       return (<InputField {...this.props}/>);
