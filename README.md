@@ -10,17 +10,17 @@ Meteor package which provides a client-side collection manager
 
 ![Screenshot](https://dl.dropboxusercontent.com/s/zen9ueyf0g39tkc/2015-08-17%20at%202.02%20AM%202x.png)
 
-# Demo
+#### Demo
 [Online demo](http://collection-manager.meteor.com/)
 
-# Example App
+#### Example App
 [Example app](https://github.com/colvint/collection-manager-example)
 
-# Installation (depends on `aldeed:collection2`)
+#### Installation (depends on `aldeed:collection2`)
 
 `meteor add tauruscolvin:collection-manager aldeed:collection2`
 
-## Usage
+#### Usage
 
 Create a collection and attach a schema:
 
