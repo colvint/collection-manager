@@ -1,23 +1,33 @@
-var ImportPreviewer = ReactMeteor.createClass({
-  render: function () {
-    var importPreviewer = this,
-        previewSize     = this.props.previewSize;
+"use strict";
+
+let ImportPreviewer = ReactMeteor.createClass({
+  render() {
+    let previewObjects = _.first(this.props.previewObjects, this.props.previewSize),
+        schema = this.props.collection.simpleSchema().schema();
 
     return (
       <ReactBootstrap.Table className="table table-condensed">
         <thead>
           <tr>
-            {_.map(importPreviewer.props.schema.schema(), function (fieldSchema, fieldName) {
-              return (<th key={fieldName}>{fieldName}</th>);
+            {_.map(schema, (fieldSchema, fieldName) => {
+              return (
+                <th key={fieldName}>
+                  {fieldName}
+                </th>
+              );
             })}
           </tr>
         </thead>
         <tbody>
-          {_.map(_.first(importPreviewer.props.previewObjects, previewSize), function (obj, i) {
+          {_.map(previewObjects, (obj, i) => {
             return (
               <tr key={i}>
-                {_.map(importPreviewer.props.schema.schema(), function (fieldSchema, fieldName) {
-                  return (<td key={fieldName}>{obj[fieldName]}</td>);
+                {_.map(schema, (fieldSchema, fieldName) => {
+                  return (
+                    <td key={fieldName}>
+                      {obj[fieldName]}
+                    </td>
+                  );
                 })}
               </tr>
             );
@@ -27,6 +37,10 @@ var ImportPreviewer = ReactMeteor.createClass({
     );
   }
 });
+
+ImportPreviewer.defaultProps = {
+  previewSize: 5
+};
 
 CollectionManager.ImportModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
@@ -58,16 +72,16 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
     }
   },
 
-  getInitialState: function () {
+  getInitialState() {
     return this.initialState;
   },
 
-  onHide: function () {
+  onHide() {
     this.replaceState(this.initialState);
     this.props.onHide.call();
   },
 
-  onFileChosen: function (event) {
+  onFileChosen(event) {
     var file = _.first(event.target.files);
 
     Papa.parse(file, _.extend(this.state.config, {
@@ -75,39 +89,34 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
     }));
   },
 
-  onFileParsed: function (results, file) {
-    var self           = this,
-        validObjects   = [],
+  onFileParsed(results, file) {
+    var validObjects   = [],
         invalidObjects = [];
 
-    _.each(results.data, function (parsedObject, i) {
-      if (self.validationContext().validate(parsedObject)) {
+    _.each(results.data, (parsedObject, i) => {
+      if (this.validationContext().validate(parsedObject)) {
         validObjects.push(parsedObject);
       } else {
         invalidObjects.push(parsedObject);
       }
     });
 
-    this.setState({
-      validObjects: validObjects,
-      invalidObjects: invalidObjects
-    });
+    this.setState({validObjects: validObjects, invalidObjects: invalidObjects});
   },
 
-  validationContext: function () {
-    return this.props.schema.namedContext("importForm");
+  validationContext() {
+    return this.props.collection.simpleSchema().namedContext("importForm");
   },
 
-  processImports: function () {
-    var importableObjects = this.state.validObjects,
-        self              = this;
+  processImports() {
+    var importableObjects = this.state.validObjects;
 
-    _.each(importableObjects, function (obj, i) {
-      self.props.collection.insert(obj, function (error, result) {
+    _.each(importableObjects, (obj, i) => {
+      this.props.collection.insert(obj, (error, result) => {
         if (error) {
           console.log(error);
         } else {
-          self.setState({
+          this.setState({
             percentImported: parseInt(((i + 1) / importableObjects.length) * 100)
           });
         }
@@ -116,16 +125,15 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
     this.onHide();
   },
 
-  render: function () {
-    var self                = this,
-        importableObjects   = this.state.validObjects,
+  render() {
+    var importableObjects   = this.state.validObjects,
         unImportableObjects = this.state.invalidObjects;
 
     return (
       <ReactBootstrap.Modal show={this.props.show} onHide={this.onHide}>
         <ReactBootstrap.Modal.Header closeButton>
           <ReactBootstrap.Modal.Title>
-            Import {this.props.objectName}
+            Import {this.props.collection._name}
           </ReactBootstrap.Modal.Title>
         </ReactBootstrap.Modal.Header>
 
@@ -134,7 +142,7 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
             <ReactBootstrap.Input
               type="file"
               label="Choose an Import File"
-              help={'The file should be a CSV containing the ' + this.props.objectName + ' to import'}
+              help={'The file should be a CSV containing the ' + this.props.collection._name + ' to import'}
               onChange={this.onFileChosen} />
           </form>
           <ReactBootstrap.TabbedArea defaultActiveKey={1}>
@@ -143,28 +151,28 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
               tab={importableObjects.length + ' importable'}>
               <ImportPreviewer
                 previewObjects={importableObjects}
-                previewSize={5}
-                schema={self.props.schema}/>
+                collection={this.props.collection}/>
             </ReactBootstrap.TabPane>
             <ReactBootstrap.TabPane
               eventKey={2}
               tab={unImportableObjects.length + ' un-importable'}>
               <ImportPreviewer
                 previewObjects={unImportableObjects}
-                previewSize={5}
-                schema={self.props.schema}/>
+                collection={this.props.collection}/>
             </ReactBootstrap.TabPane>
           </ReactBootstrap.TabbedArea>
           <ReactBootstrap.ProgressBar now={this.state.percentImported} />
         </ReactBootstrap.Modal.Body>
 
         <ReactBootstrap.Modal.Footer>
-          <ReactBootstrap.Button onClick={this.onHide}>Close</ReactBootstrap.Button>
+          <ReactBootstrap.Button onClick={this.onHide}>
+            Close
+          </ReactBootstrap.Button>
           <ReactBootstrap.Button
             onClick={this.processImports}
             bsStyle='primary'
             disabled={this.state.validObjects.length === 0 || this.state.processing}>
-            Import {this.state.validObjects.length} {this.props.objectName}
+            Import {this.state.validObjects.length} {this.props.collection._name}
           </ReactBootstrap.Button>
         </ReactBootstrap.Modal.Footer>
       </ReactBootstrap.Modal>

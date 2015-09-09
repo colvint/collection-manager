@@ -6,38 +6,25 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   getInitialState: function () {
+    var schema = this.props.collection.simpleSchema();
+
     if (this.isNewItem()) {
-      return this.props.schema.clean({});
+      return schema.clean({});
     } else {
-      return _.pick(
-        this.props.item,
-        _.keys(this.props.schema.schema())
-      );
+      return _.pick(this.props.item, _.keys(schema.schema()));
     }
   },
 
   modalTitle: function () {
-    var actionVerb;
+    var actionVerb = this.isNewItem() ? 'New' : 'Edit';
 
-    if (this.isNewItem()) {
-      actionVerb = 'New';
-    } else {
-      actionVerb = 'Edit';
-    }
-
-    return actionVerb + ' ' + this.props.objectName;
+    return actionVerb + ' ' + this.props.collection._name;
   },
 
   validationContext: function () {
-    var contextKey;
+    var contextKey = this.isNewItem() ? 'new-modal' : ('edit-modal-' + this.props.item._id);
 
-    if (this.isNewItem()) {
-      contextKey = 'new-modal';
-    } else {
-      contextKey = "edit-modal-" + this.props.item._id;
-    }
-
-    return this.props.schema.namedContext(contextKey);
+    return this.props.collection.simpleSchema().namedContext(contextKey);
   },
 
   validationMessage: function (fieldName) {
@@ -45,17 +32,20 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   validationState: function (fieldName) {
-    var cleanedState = this.props.schema.clean(this.state);
+    var item = _.clone(this.state),
+        invalidFieldNames,
+        fieldIsInvalid = false;
 
-    this.validationContext().validate(cleanedState);
+    this.props.collection.simpleSchema().clean(item);
+    this.validationContext().validate(item);
 
-    var invalidField = _.find(this.validationContext().invalidKeys(),
-      function (invalidKey) {
-        return invalidKey.name === fieldName;
-      }
-    );
+    invalidFieldNames = _.pluck(this.validationContext().invalidKeys(), 'name');
 
-    return invalidField ? 'error' : 'success';
+    if (_.contains(invalidFieldNames, fieldName)) {
+      fieldIsInvalid = true;
+    }
+
+    return fieldIsInvalid ? 'error' : 'success';
   },
 
   onHide: function () {
@@ -66,62 +56,44 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   afterSave: function (error, result) {
-    if (error) {
-      console.log(error);
-    } else {
-      this.onHide();
-    }
+    return error ? console.log(error) : this.onHide();
   },
 
   create: function () {
-    this.props.collection.insert(
-      this.state,
-      this.afterSave
-    );
+    return this.props.collection.insert(this.state, this.afterSave);
   },
 
   update: function () {
-    this.props.collection.update(
-      this.props.itemId,
-      {$set: this.state},
-      this.afterSave
-    );
+    return this.props.collection.update(this.props.itemId,
+      {$set: this.state}, this.afterSave);
   },
 
   saveItem: function () {
-    if (this.isNewItem()) {
-      this.create();
-    } else {
-      this.update();
-    }
+    return this.isNewItem() ? this.create() : this.update();
   },
 
   render: function () {
-    var component = this,
-        placeholder;
-
     return (
       <ReactBootstrap.Modal
-        show={component.props.show}
-        onHide={component.props.onHide}>
+        show={this.props.show}
+        onHide={this.props.onHide}>
         <ReactBootstrap.Modal.Header closeButton>
           <ReactBootstrap.Modal.Title>
-            {component.modalTitle()}
+            {this.modalTitle()}
           </ReactBootstrap.Modal.Title>
         </ReactBootstrap.Modal.Header>
         <ReactBootstrap.Modal.Body>
           <form>
-            {_.map(component.props.schema.schema(), function (fieldSchema, fieldName) {
+            {_.map(this.props.collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
               return (
                 <CollectionManager.Field
                   key={fieldName}
                   fieldSchema={fieldSchema}
-                  objectName={component.props.objectName}
                   label={fieldSchema.label}
-                  placeholder={placeholder}
-                  valueLink={component.linkState(fieldName)}
-                  bsStyle={component.validationState(fieldName)}
-                  help={component.validationMessage(fieldName)}
+                  valueLink={this.linkState(fieldName)}
+                  bsStyle={this.validationState(fieldName)}
+                  help={this.validationMessage(fieldName)}
+                  placeholder={'Enter the ' + this.props.collection._name + ' ' + fieldSchema.label}
                   hasFeedback/>
               );
             })}
@@ -129,13 +101,13 @@ CollectionManager.EditModal = ReactMeteor.createClass({
         </ReactBootstrap.Modal.Body>
         <ReactBootstrap.Modal.Footer>
           <ReactBootstrap.Button
-            onClick={component.props.onHide}>
+            onClick={this.props.onHide}>
             Close
           </ReactBootstrap.Button>
           <ReactBootstrap.Button
-            onClick={component.saveItem}
+            onClick={this.saveItem}
             bsStyle='primary'
-            disabled={!component.validationContext().isValid()}>
+            disabled={!this.validationContext().isValid()}>
             Save
           </ReactBootstrap.Button>
         </ReactBootstrap.Modal.Footer>

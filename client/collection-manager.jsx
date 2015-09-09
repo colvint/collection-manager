@@ -1,277 +1,269 @@
+"use strict";
+
 CollectionManager = {
-  Mixin: {
-    getInitialState: function () {
-      var itemFilter = {};
+  compose(collection, templateName, options) {
+    const Composite = ReactMeteor.createClass({
+      templateName: templateName,
 
-      _.each(this.schema.schema(), function (fieldSchema, fieldName) {
-        if (typeof(fieldSchema.defaultValue) !== 'undefined') {
-          itemFilter[fieldName] = fieldSchema.defaultValue;
+      getInitialState() {
+        return {
+          itemFilter:        collection.simpleSchema().clean({}),
+          currentPage:       0,
+          perPage:           10,
+          selectedItemIds:   [],
+          importModalIsOpen: false,
+          newModalIsOpen:    false,
+          editModalToggles:  {}
+        };
+      },
+
+      getMeteorState() {
+        let cursor = collection.find(
+          this.state.itemFilter
+        );
+
+        return {
+          items: cursor.fetch(),
+          itemCount: cursor.count(),
         }
-      });
+      },
 
-      return {
-        currentPage:       0,
-        perPage:           10,
-        itemFilter:        itemFilter,
-        selectedItemIds:   [],
-        importModalIsOpen: false,
-        newModalIsOpen:    false,
-        editModalToggles:  {}
-      };
-    },
+      perPageChanged(event) {
+        this.setState({
+          perPage: event.target.value
+        });
+      },
 
-    getMeteorState: function () {
-      var cursor     = this.collection.find(this.state.itemFilter, {}),
-          items      = cursor.fetch(),
-          itemCount  = cursor.count();
+      setCurrentPage(page) {
+        this.setState({currentPage: page});
+      },
 
-      return {
-        items:     items,
-        itemCount: itemCount
-      };
-    },
+      filterChangedFor(field, schema, event) {
+        var filterVal     = event.target.value,
+            currentFilter = this.state.itemFilter;
 
-    perPageChanged: function (event) {
-      this.setState({
-        perPage: event.target.value
-      });
-    },
+        if (schema.type === Number && Number(filterVal)) {
+          currentFilter[field] = {$lte: Number(filterVal)};
+        } else if (schema.type === String && filterVal) {
+          currentFilter[field] = new RegExp(filterVal, 'i');
+        } else if (schema.type instanceof Relation && filterVal) {
+          currentFilter[field] = filterVal;
+        } else if (schema.type === Boolean) {
+          currentFilter[field] = filterVal;
+        } else {
+          delete currentFilter[field];
+        }
 
-    setCurrentPage: function (page) {
-      this.setState({currentPage: page});
-    },
+        this.setState({itemFilter: currentFilter});
+      },
 
-    filterChangedFor: function (field, schema, event) {
-      var filterVal     = event.target.value,
-          currentFilter = this.state.itemFilter;
+      onItemSelected(itemId) {
+        var selectedItemIds = this.state.selectedItemIds,
+            itemPosition    = this.state.selectedItemIds.indexOf(itemId);
 
-      if (schema.type === Number && Number(filterVal)) {
-        currentFilter[field] = {$lte: Number(filterVal)};
-      } else if (schema.type === String && filterVal) {
-        currentFilter[field] = new RegExp(filterVal, 'i');
-      } else if (schema.type instanceof Relation && filterVal) {
-        currentFilter[field] = filterVal;
-      } else if (schema.type === Boolean) {
-        currentFilter[field] = filterVal;
-      } else {
-        delete currentFilter[field];
-      }
+        if (itemPosition === -1) {
+          // select the  item
+          selectedItemIds.push(itemId);
+        } else {
+          // de-select the item
+          selectedItemIds.splice(itemPosition, 1);
+        }
+        this.setState({
+          selectedItemIds: selectedItemIds
+        });
+      },
 
-      this.setState({itemFilter: currentFilter});
-    },
+      itemSelectorChanged(selectionCommand) {
+        switch (selectionCommand) {
+          case 'all':
+            this.selectAll();
+            break;
+          case 'none':
+            this.selectNone();
+            break;
+          case 'inverse':
+            this.selectInverse();
+            break;
+        }
+      },
 
-    onItemSelected: function (itemId) {
-      var selectedItemIds = this.state.selectedItemIds,
-          itemPosition    = this.state.selectedItemIds.indexOf(itemId);
+      selectAll() {
+        this.setState({
+          selectedItemIds: _.pluck(this.state.items, '_id')
+        });
+      },
 
-      if (itemPosition === -1) {
-        // select the  item
-        selectedItemIds.push(itemId);
-      } else {
-        // de-select the item
-        selectedItemIds.splice(itemPosition, 1);
-      }
-      this.setState({
-        selectedItemIds: selectedItemIds
-      });
-    },
+      selectNone() {
+        this.setState({
+          selectedItemIds: []
+        });
+      },
 
-    itemSelectorChanged: function (selectionCommand) {
-      switch (selectionCommand) {
-        case 'all':
-          this.selectAll();
-          break;
-        case 'none':
-          this.selectNone();
-          break;
-        case 'inverse':
-          this.selectInverse();
-          break;
-      }
-    },
+      selectInverse() {
+        var inverseSelection = _.difference(
+          _.pluck(this.state.items, '_id'),
+          this.state.selectedItemIds
+        );
 
-    selectAll: function () {
-      this.setState({
-        selectedItemIds: _.pluck(this.state.items, '_id')
-      });
-    },
+        this.setState({
+          selectedItemIds: inverseSelection
+        });
+      },
 
-    selectNone: function () {
-      this.setState({
-        selectedItemIds: []
-      });
-    },
+      toggleEditModal(itemId, flag) {
+        var editModalToggles = this.state.editModalToggles,
+            modalToggle      = {};
 
-    selectInverse: function () {
-      var inverseSelection = _.difference(
-        _.pluck(this.state.items, '_id'),
-        this.state.selectedItemIds
-      );
+        modalToggle[itemId] = flag;
 
-      this.setState({
-        selectedItemIds: inverseSelection
-      });
-    },
+        editModalToggles = React.addons.update(editModalToggles, {
+          $merge: modalToggle
+        });
 
-    toggleEditModal: function (itemId, flag) {
-      var editModalToggles = this.state.editModalToggles,
-          modalToggle      = {};
+        this.setState({
+          editModalToggles: editModalToggles
+        });
+      },
 
-      modalToggle[itemId] = flag;
+      toggleImportModal(open) {
+        this.setState({importModalIsOpen: open});
+      },
 
-      editModalToggles = React.addons.update(editModalToggles, {
-        $merge: modalToggle
-      });
+      toggleNewModal(open) {
+        this.setState({newModalIsOpen: open});
+      },
 
-      this.setState({
-        editModalToggles: editModalToggles
-      });
-    },
+      render () {
+        let component            = this,
+            fromIndex            = this.state.perPage * this.state.currentPage,
+            toIndex              = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
+            shownItems           = this.state.items.slice(fromIndex, toIndex + 1),
+            selectorControlStyle = {textAlign: 'center'};
 
-    toggleImportModal: function (open) {
-      this.setState({importModalIsOpen: open});
-    },
-
-    toggleNewModal: function (open) {
-      this.setState({newModalIsOpen: open});
-    },
-
-    render: function () {
-      var component            = this,
-          fromIndex            = component.state.perPage * component.state.currentPage,
-          toIndex              = Math.min(fromIndex + component.state.perPage - 1, component.state.itemCount - 1),
-          shownItems           = component.state.items.slice(fromIndex, toIndex + 1),
-          selectorControlStyle = {textAlign: 'center'};
-
-      return (
-        <div className="form-inline">
-          <div className="row">
-            <div className="col-md-12">
-              <CollectionManager.ListPageSizer
-                perPage={component.state.perPage}
-                perPageChanged={component.perPageChanged}/>
+        return (
+          <div className="form-inline">
+            <div className="row">
+              <div className="col-md-12">
+                <CollectionManager.ListPageSizer
+                  perPage={component.state.perPage}
+                  perPageChanged={component.perPageChanged}/>
+              </div>
             </div>
-          </div>
-          <div className="row">
-            <div className="col-md-12">
-              <ReactBootstrap.Panel>
-                <div className="panel-heading">
-                  <ReactBootstrap.ButtonToolbar>
-                    <ReactBootstrap.ButtonGroup>
+            <div className="row">
+              <div className="col-md-12">
+                <ReactBootstrap.Panel>
+                  <div className="panel-heading">
+                    <ReactBootstrap.ButtonToolbar>
                       <CollectionManager.SelectedItemsActionsMenu
                         selectedItemIds={component.state.selectedItemIds}
-                        connection={component.connection}
-                        statusChangeMethod={component.statusChangeMethod}
+                        collection={collection}
+                        actions={options.actions}
                         onActionCompleted={component.selectNone}/>
-                    </ReactBootstrap.ButtonGroup>
-                    <ReactBootstrap.ButtonGroup className="pull-right">
-                      <ReactBootstrap.Button
-                        bsStyle="info"
-                        onClick={component.toggleImportModal.bind(component, true)}>
-                        Import
-                      </ReactBootstrap.Button>
-                      <CollectionManager.ImportModal
-                        show={component.state.importModalIsOpen}
-                        onHide={component.toggleImportModal.bind(component, false)}
-                        objectName={component.documentPlural}
-                        schema={component.schema}
-                        collection={component.collection}/>
-                      <ReactBootstrap.Button
-                        bsStyle="primary"
-                        onClick={component.toggleNewModal.bind(component, true)}>
-                        New
-                      </ReactBootstrap.Button>
-                      <CollectionManager.EditModal
-                        show={component.state.newModalIsOpen}
-                        onHide={component.toggleNewModal.bind(component, false)}
-                        objectName={component.documentSingular}
-                        schema={component.schema}
-                        collection={component.collection}/>
-                    </ReactBootstrap.ButtonGroup>
-                  </ReactBootstrap.ButtonToolbar>
-                </div>
-                <div className="table-responsive">
-                  <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
-                    <thead>
-                      <tr>
-                        <th style={selectorControlStyle}>
-                          <CollectionManager.ListItemSelector
-                            onSelect={component.itemSelectorChanged}/>
-                        </th>
-                        {_.map(component.schema.schema(), function (fieldSchema, fieldName) {
+                      <ReactBootstrap.ButtonGroup className="pull-right">
+                        <ReactBootstrap.Button
+                          bsStyle="info"
+                          onClick={component.toggleImportModal.bind(component, true)}>
+                          Import
+                        </ReactBootstrap.Button>
+                        <CollectionManager.ImportModal
+                          show={component.state.importModalIsOpen}
+                          onHide={component.toggleImportModal.bind(component, false)}
+                          collection={collection}/>
+                        <ReactBootstrap.Button
+                          bsStyle="primary"
+                          onClick={component.toggleNewModal.bind(component, true)}>
+                          New
+                        </ReactBootstrap.Button>
+                        <CollectionManager.EditModal
+                          show={component.state.newModalIsOpen}
+                          onHide={component.toggleNewModal.bind(component, false)}
+                          collection={collection}/>
+                      </ReactBootstrap.ButtonGroup>
+                    </ReactBootstrap.ButtonToolbar>
+                  </div>
+                  <div className="table-responsive">
+                    <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th style={selectorControlStyle} className='col-md-1'>
+                            <CollectionManager.ListItemSelector
+                              onSelect={component.itemSelectorChanged}/>
+                          </th>
+                          {_.map(collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+                            return (
+                              <th key={fieldName} className='col-md-3'>
+                                <CollectionManager.Field
+                                  key={fieldName}
+                                  fieldSchema={fieldSchema}
+                                  objectName={collection._name}
+                                  placeholder={'Filter for ' + fieldSchema.label}
+                                  onChange={component.filterChangedFor.bind(component, fieldName, fieldSchema)}/>
+                              </th>
+                            );
+                          })}
+                          <th className='col-md-1'></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {shownItems.map(function (item) {
                           return (
-                            <th key={fieldName}>
-                              <CollectionManager.Field
-                                key={fieldName}
-                                fieldSchema={fieldSchema}
-                                objectName={component.documentSingular}
-                                placeholder={'Filter for ' + fieldName}
-                                onChange={component.filterChangedFor.bind(component, fieldName, fieldSchema)}/>
-                            </th>
+                            <tr key={item._id}>
+                              <td style={selectorControlStyle}>
+                                <ReactBootstrap.Input
+                                  type="checkbox"
+                                  checked={_.contains(component.state.selectedItemIds, item._id)}
+                                  onChange={component.onItemSelected.bind(component, item._id)}/>
+                              </td>
+                              {_.map(collection.simpleSchema().schema(), function (schema, name) {
+                                return (
+                                  <CollectionManager.ListCell
+                                    key={name}
+                                    item={item}
+                                    fieldName={name}
+                                    fieldSchema={schema}/>
+                                );
+                              })}
+                              <td>
+                                <ReactBootstrap.Button
+                                  onClick={component.toggleEditModal.bind(component, item._id, true)}>
+                                  Edit
+                                </ReactBootstrap.Button>
+                                <CollectionManager.EditModal
+                                  show={component.state.editModalToggles[item._id]}
+                                  onHide={component.toggleEditModal.bind(component, item._id, false)}
+                                  collection={collection}
+                                  itemId={item._id}
+                                  item={item}/>
+                              </td>
+                            </tr>
                           );
                         })}
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {shownItems.map(function (item) {
-                        return (
-                          <tr key={item._id}>
-                            <td style={selectorControlStyle}>
-                              <ReactBootstrap.Input
-                                type="checkbox"
-                                checked={_.contains(component.state.selectedItemIds, item._id)}
-                                onChange={component.onItemSelected.bind(component, item._id)}/>
-                            </td>
-                            {_.map(component.schema.schema(), function (schema, name) {
-                              return (
-                                <CollectionManager.ListCell
-                                  key={name}
-                                  item={item}
-                                  fieldName={name}
-                                  fieldSchema={schema}/>
-                              );
-                            })}
-                            <td>
-                              <ReactBootstrap.Button
-                                onClick={component.toggleEditModal.bind(component, item._id, true)}>
-                                Edit
-                              </ReactBootstrap.Button>
-                              <CollectionManager.EditModal
-                                show={component.state.editModalToggles[item._id]}
-                                onHide={component.toggleEditModal.bind(component, item._id, false)}
-                                objectName={component.documentSingular}
-                                schema={component.schema}
-                                collection={component.collection}
-                                itemId={item._id}
-                                item={item}/>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </ReactBootstrap.Table>
-                </div>
-              </ReactBootstrap.Panel>
+                      </tbody>
+                    </ReactBootstrap.Table>
+                  </div>
+                </ReactBootstrap.Panel>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6">
+                <CollectionManager.ListInfo
+                  fromIndex={fromIndex}
+                  toIndex={toIndex}
+                  itemCount={component.state.itemCount}/>
+              </div>
+              <div className="col-md-6">
+                <CollectionManager.ListPaginator
+                  itemCount={component.state.itemCount}
+                  perPage={component.state.perPage}
+                  currentPage={component.state.currentPage}
+                  onPageChange={component.setCurrentPage}/>
+              </div>
             </div>
           </div>
-          <div className="row">
-            <div className="col-md-6">
-              <CollectionManager.ListInfo
-                fromIndex={fromIndex}
-                toIndex={toIndex}
-                itemCount={component.state.itemCount}/>
-            </div>
-            <div className="col-md-6">
-              <CollectionManager.ListPaginator
-                itemCount={component.state.itemCount}
-                perPage={component.state.perPage}
-                currentPage={component.state.currentPage}
-                onPageChange={component.setCurrentPage}/>
-            </div>
-          </div>
-        </div>
-      );
-    }
+        );
+      }
+    });
+
+    return Composite;
   }
 }

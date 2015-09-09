@@ -1,5 +1,12 @@
 # collection-manager
-Meteor package which provides a client-side collection manager (CRUD)
+Meteor package which provides a client-side collection manager
+
+#### Features
+- CRUD
+- Import
+- Item selection
+- Auto-pagination
+- Custom actions
 
 ![Screenshot](https://dl.dropboxusercontent.com/s/zen9ueyf0g39tkc/2015-08-17%20at%202.02%20AM%202x.png)
 
@@ -9,37 +16,64 @@ Meteor package which provides a client-side collection manager (CRUD)
 # Example App
 [Example app](https://github.com/colvint/collection-manager-example)
 
-# Installation
+# Installation (depends on `aldeed:collection2`)
 
-`meteor add tauruscolvin:collection-manager`
+`meteor add tauruscolvin:collection-manager aldeed:collection2`
 
 ## Usage
 
-For example, to create a manager for an *existing* `Organizations` collection:
+Create a collection and attach a schema:
 
 ~~~js
+// in some-file.jsx
 
-// in client/some-file.jsx
+Organizations = new Mongo.Collection('organizations');
 
-ReactMeteor.createClass({
-  mixins: [CollectionManagerMixin],
+Organizations.attachSchema(new SimpleSchema({
+  status: {
+    type: String,
+    label: 'status'
+  },
 
-  templateName:   'OrganizationManager', // this will make an OrganizationsDataGrid template
-  collectionName: 'Organizations', // this collection is assumed to already exist
-  singularName:   'organization', // how you want the collection to be referred to in the singular
-  pluralName:     'organizations', // ditto for plural
+  name: {
+    type: String,
+    label: 'name'
+  },
 
-  // column config
-  // field: the name of the field within your collection
-  // label: how the column for that field should be labeled in the table
-  // type: url, number or string (default)
-  
-  columns: [
-    {field: 'name',        label: 'Name'},
-    {field: 'url',         label: 'Website', type: 'url'},
-    {field: 'memberCount', label: 'Members', type: 'number'}
-  ]
-});
+  url: {
+    type: String,
+    label: 'url'
+  }
+}));
+
+if (Meteor.isClient) {
+  var FooModalAction = React.createClass({
+    render() {
+      return (
+        <ReactBootstrap.Modal show={this.props.show} onHide={this.props.onHide}>
+          <ReactBootstrap.Modal.Header closeButton>
+            {this.props.title}
+          </ReactBootstrap.Modal.Header>
+          <ReactBootstrap.Modal.Body>
+            foo on ids: {this.props.selectedIds.join(', ')}
+          </ReactBootstrap.Modal.Body>
+          <ReactBootstrap.Modal.Footer>
+            &nbsp;
+          </ReactBootstrap.Modal.Footer>
+        </ReactBootstrap.Modal>
+      );
+    }
+  });
+
+  CollectionManager.compose(Organizations, 'OrganizationsManager', {
+    actions: {
+      fooAction: {
+        title: "Foo Action",
+        modal: FooModalAction
+      }
+    }
+  });
+}
 ~~~
 
 *Note the `.jsx` extension on the file above*

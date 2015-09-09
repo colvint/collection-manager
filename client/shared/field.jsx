@@ -44,12 +44,8 @@ var InputField = ReactMeteor.createClass({
   },
 
   render: function () {
-    var placeholder = 'Enter the ' + this.props.objectName + ' ' + this.props.key;
-
     return (
-      <ReactBootstrap.Input
-        type={this.inputTypeFor(this.props.fieldSchema)}
-        placeholder={placeholder}
+      <ReactBootstrap.Input type={this.inputTypeFor(this.props.fieldSchema)}
         {...this.props}/>
     );
   }
