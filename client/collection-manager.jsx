@@ -252,13 +252,13 @@ CollectionManager = {
               </div>
             </div>
             <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-3">
                 <CollectionManager.ListInfo
                   fromIndex={fromIndex}
                   toIndex={toIndex}
                   itemCount={component.state.itemCount}/>
               </div>
-              <div className="col-md-6">
+              <div className="col-md-9">
                 <CollectionManager.ListPaginator
                   itemCount={component.state.itemCount}
                   perPage={component.state.perPage}
