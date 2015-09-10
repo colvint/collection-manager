@@ -22,27 +22,52 @@ Meteor package which provides a client-side collection manager
 
 #### Usage
 
-Create a collection and attach a schema:
+Create a collection and attach a schema use extended options:
+
+```
+allowEdit: true, // displays the field in the edit modal
+allowFilter: true, // displays the field in the list
+displayAs: BelongsToSchoolGroup, // pass an instance of Relation to handle associations
+```
 
 ~~~js
 // in some-file.jsx
 
 Organizations = new Mongo.Collection('organizations');
+SchoolGroups = new Mongo.Collection('school-groups');
+
+BelongsToSchoolGroup = new Relation(SchoolGroups);
 
 Organizations.attachSchema(new SimpleSchema({
   status: {
     type: String,
-    label: 'status'
+    label: 'status',
+    allowedValues: ['active', 'archived', 'removed'],
+    allowFilter: true
   },
 
   name: {
     type: String,
-    label: 'name'
+    label: 'name',
+    allowFilter: true,
+    allowEdit: true
   },
 
   url: {
     type: String,
-    label: 'url'
+    label: 'url',
+    regEx: SimpleSchema.RegEx.Url,
+    allowEdit: true,
+    allowFilter: true
+  },
+
+  schoolGroupId: {
+    type: String,
+    label: 'School Group',
+    allowEdit: true,
+    allowFilter: true,
+    displayAs: BelongsToSchoolGroup,
+    optional: true
   }
 }));
 
@@ -71,6 +96,26 @@ if (Meteor.isClient) {
         title: "Foo Action",
         modal: FooModalAction
       }
+    }
+  });
+}
+
+if (Meteor.isServer) {
+  Meteor.startup(function () {
+    if (Organizations.find().count() == 0) {
+
+      console.log('Adding startup data...');
+
+      var organizations = [
+        {name: 'Foobar Group, Inc.', url: 'http://foobar.example.com', memberCount: 50},
+        {name: 'Bazzy Group, Inc.', url: 'http://bazzy.example.com', memberCount: 20},
+        {name: 'Vertigo Group, Inc.', url: 'http://vertigo.example.com', memberCount: 3},
+      ];
+
+      organizations.map(function (obj, i) {
+        Organizations.insert(obj);
+        console.log('Inserted organization: ', obj);
+      });
     }
   });
 }
