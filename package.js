@@ -36,6 +36,7 @@ Package.onUse(function(api) {
   ], 'client');
 
   api.export('CollectionManager', 'client');
+  api.export('Relation');
 });
 
 Package.onTest(function (api) {

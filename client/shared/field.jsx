@@ -53,12 +53,12 @@ var InputField = ReactMeteor.createClass({
 
 CollectionManager.Field = ReactMeteor.createClass({
   render: function () {
-    var fieldType = this.props.fieldSchema.type;
+    var displayAs = this.props.fieldSchema.displayAs;
 
-    if (fieldType instanceof Relation) {
+    if (displayAs instanceof Relation) {
       return (
         <RelationField {...this.props}
-          selectOptions={fieldType.allowedOptions()}/>
+          selectOptions={displayAs.allowedOptions()}/>
       );
     } else if (this.props.fieldSchema.allowedValues) {
       return (
