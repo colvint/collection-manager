@@ -1,12 +1,14 @@
+"use strict";
+
 CollectionManager.EditModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
 
-  isNewItem: function () {
+  isNewItem() {
     return typeof(this.props.itemId) === 'undefined';
   },
 
-  getInitialState: function () {
-    var schema = this.props.collection.simpleSchema();
+  getInitialState() {
+    let schema = this.props.collection.simpleSchema();
 
     if (this.isNewItem()) {
       return schema.clean({});
@@ -15,24 +17,24 @@ CollectionManager.EditModal = ReactMeteor.createClass({
     }
   },
 
-  modalTitle: function () {
-    var actionVerb = this.isNewItem() ? 'New' : 'Edit';
+  modalTitle() {
+    let actionVerb = this.isNewItem() ? 'New' : 'Edit';
 
     return actionVerb + ' ' + this.props.collection._name;
   },
 
-  validationContext: function () {
-    var contextKey = this.isNewItem() ? 'new-modal' : ('edit-modal-' + this.props.item._id);
+  validationContext() {
+    let contextKey = this.isNewItem() ? 'new-modal' : ('edit-modal-' + this.props.item._id);
 
     return this.props.collection.simpleSchema().namedContext(contextKey);
   },
 
-  validationMessage: function (fieldName) {
+  validationMessage(fieldName) {
     return this.validationContext().keyErrorMessage(fieldName);
   },
 
-  validationState: function (fieldName) {
-    var item = _.clone(this.state),
+  validationState(fieldName) {
+    let item = _.clone(this.state),
         invalidFieldNames,
         fieldIsInvalid = false;
 
@@ -48,31 +50,39 @@ CollectionManager.EditModal = ReactMeteor.createClass({
     return fieldIsInvalid ? 'error' : 'success';
   },
 
-  onHide: function () {
+  onHide() {
     if (this.isNewItem()) {
       this.replaceState({});
     }
     this.props.onHide();
   },
 
-  afterSave: function (error, result) {
+  afterSave(error, result) {
     return error ? console.log(error) : this.onHide();
   },
 
-  create: function () {
+  create() {
     return this.props.collection.insert(this.state, this.afterSave);
   },
 
-  update: function () {
+  update() {
     return this.props.collection.update(this.props.itemId,
       {$set: this.state}, this.afterSave);
   },
 
-  saveItem: function () {
+  saveItem() {
     return this.isNewItem() ? this.create() : this.update();
   },
 
-  render: function () {
+  render() {
+    let editFields = {};
+
+    _.each(this.props.collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+      if (fieldSchema.allowEdit) {
+        editFields[fieldName] = fieldSchema;
+      }
+    });
+
     return (
       <ReactBootstrap.Modal
         show={this.props.show}
@@ -84,7 +94,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
         </ReactBootstrap.Modal.Header>
         <ReactBootstrap.Modal.Body>
           <form>
-            {_.map(this.props.collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+            {_.map(editFields, (fieldSchema, fieldName) => {
               return (
                 <CollectionManager.Field
                   key={fieldName}

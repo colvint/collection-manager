@@ -60,7 +60,7 @@ CollectionManager.Field = ReactMeteor.createClass({
         <RelationField {...this.props}
           selectOptions={fieldType.allowedOptions()}/>
       );
-    } else if (_.isArray(fieldType)) {
+    } else if (this.props.fieldSchema.allowedValues) {
       return (
         <SelectField {...this.props}
           selectOptions={this.props.fieldSchema.allowedValues}/>

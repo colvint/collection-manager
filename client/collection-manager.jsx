@@ -134,11 +134,18 @@ CollectionManager = {
       },
 
       render () {
-        let component            = this,
-            fromIndex            = this.state.perPage * this.state.currentPage,
-            toIndex              = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
-            shownItems           = this.state.items.slice(fromIndex, toIndex + 1),
-            selectorControlStyle = {textAlign: 'center'};
+        let component = this,
+            fromIndex = this.state.perPage * this.state.currentPage,
+            toIndex = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
+            shownItems = this.state.items.slice(fromIndex, toIndex + 1),
+            selectorControlStyle = {textAlign: 'center'},
+            filterFields = {};
+
+        _.each(collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+          if (fieldSchema.allowFilter) {
+            filterFields[fieldName] = fieldSchema;
+          }
+        });
 
         return (
           <div className="form-inline">
@@ -189,7 +196,7 @@ CollectionManager = {
                             <CollectionManager.ListItemSelector
                               onSelect={component.itemSelectorChanged}/>
                           </th>
-                          {_.map(collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+                          {_.map(filterFields, (fieldSchema, fieldName) => {
                             return (
                               <th key={fieldName} className='col-md-3'>
                                 <CollectionManager.Field
@@ -214,7 +221,7 @@ CollectionManager = {
                                   checked={_.contains(component.state.selectedItemIds, item._id)}
                                   onChange={component.onItemSelected.bind(component, item._id)}/>
                               </td>
-                              {_.map(collection.simpleSchema().schema(), function (schema, name) {
+                              {_.map(filterFields, function (schema, name) {
                                 return (
                                   <CollectionManager.ListCell
                                     key={name}
