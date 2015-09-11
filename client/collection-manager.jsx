@@ -2,6 +2,8 @@
 
 CollectionManager = {
   compose(collection, templateName, options) {
+    if (typeof options === 'undefined') options = {};
+    
     const Composite = ReactMeteor.createClass({
       templateName: templateName,
 
