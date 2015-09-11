@@ -39,13 +39,13 @@ Package.onUse(function(api) {
   api.export('Relation');
 });
 
-Package.onTest(function (api) {
-  api.use('tinytest', 'client');
-  api.use('tauruscolvin:meteor-react-bootstrap', 'client');
-  api.use('tauruscolvin:collection-manager', 'client');
-
-  api.export('React', 'client');
-  api.export('CollectionManager', 'client');
-
-  api.addFiles(['collection-manager-tests.jsx'], 'client');
-});
+// Package.onTest(function (api) {
+//   api.use('tinytest', 'client');
+//   api.use('tauruscolvin:meteor-react-bootstrap', 'client');
+//   api.use('tauruscolvin:collection-manager', 'client');
+//
+//   api.export('React', 'client');
+//   api.export('CollectionManager', 'client');
+//
+//   api.addFiles(['collection-manager-tests.jsx'], 'client');
+// });
