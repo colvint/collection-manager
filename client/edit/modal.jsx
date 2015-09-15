@@ -1,5 +1,13 @@
 "use strict";
 
+// var ReadOnlyField = ReactMeteor.createClass({
+//   render: function () {
+//     return (
+//
+//     );
+//   }
+// });
+
 CollectionManager.EditModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
 
@@ -62,12 +70,28 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   create() {
-    return this.props.collection.insert(this.state, this.afterSave);
+    return this.props.collection.insert(
+      this.state,
+      this.afterSave
+    );
   },
 
   update() {
-    return this.props.collection.update(this.props.itemId,
-      {$set: this.state}, this.afterSave);
+    let item = {};
+
+    _.each(this.props.collection.simpleSchema().schema(),
+      (fieldSchema, fieldName) => {
+        if (!fieldSchema.denyUpdate) {
+          item[fieldName] = this.state[fieldName];
+        }
+      }
+    );
+
+    return this.props.collection.update(
+      this.props.itemId,
+      {$set: item},
+      this.afterSave
+    );
   },
 
   saveItem() {

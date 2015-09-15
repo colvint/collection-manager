@@ -1,9 +1,11 @@
 var RelationField = ReactMeteor.createClass({
   render: function () {
+    var selectOptions = this.props.fieldSchema.displayAs.allowedOptions();
+
     return (
       <ReactBootstrap.Input type="select" {...this.props}>
         <option></option>
-        {this.props.selectOptions.map(function (selectOption) {
+        {selectOptions.map(function (selectOption) {
           return (
             <option key={selectOption._id} value={selectOption._id}>
               {selectOption.name}
@@ -17,10 +19,12 @@ var RelationField = ReactMeteor.createClass({
 
 var SelectField = ReactMeteor.createClass({
   render: function () {
+    var selectOptions = this.props.fieldSchema.allowedValues;
+
     return (
       <ReactBootstrap.Input type="select" {...this.props}>
         <option></option>
-        {this.props.selectOptions.map(function (selectOption) {
+        {selectOptions.map(function (selectOption) {
           return (
             <option key={selectOption} value={selectOption}>
               {selectOption}
@@ -45,7 +49,8 @@ var InputField = ReactMeteor.createClass({
 
   render: function () {
     return (
-      <ReactBootstrap.Input type={this.inputTypeFor(this.props.fieldSchema)}
+      <ReactBootstrap.Input
+        type={this.inputTypeFor(this.props.fieldSchema)}
         {...this.props}/>
     );
   }
@@ -53,18 +58,10 @@ var InputField = ReactMeteor.createClass({
 
 CollectionManager.Field = ReactMeteor.createClass({
   render: function () {
-    var displayAs = this.props.fieldSchema.displayAs;
-
-    if (displayAs instanceof Relation) {
-      return (
-        <RelationField {...this.props}
-          selectOptions={displayAs.allowedOptions()}/>
-      );
+    if (this.props.fieldSchema.displayAs instanceof Relation) {
+      return (<RelationField {...this.props}/>);
     } else if (this.props.fieldSchema.allowedValues) {
-      return (
-        <SelectField {...this.props}
-          selectOptions={this.props.fieldSchema.allowedValues}/>
-      );
+      return (<SelectField {...this.props}/>);
     } else {
       return (<InputField {...this.props}/>);
     }

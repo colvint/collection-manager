@@ -1,15 +1,22 @@
 "use strict";
 
 CollectionManager = {
-  compose(collection, templateName, options) {
+  compose(collection, options) {
     if (typeof options === 'undefined') options = {};
-    
-    const Composite = ReactMeteor.createClass({
+
+    let templateName = options.templateName || (collection._name + 'Manager'),
+        selector = options.selector || (() => ({})),
+        subscriptions = options.subscriptions || (() => ({}));
+
+    const Component = ReactMeteor.createClass({
+      displayName: templateName,
       templateName: templateName,
+
+      startMeteorSubscriptions: subscriptions,
 
       getInitialState() {
         return {
-          itemFilter:        collection.simpleSchema().clean({}),
+          itemFilter:        {},
           currentPage:       0,
           perPage:           10,
           selectedItemIds:   [],
@@ -21,7 +28,7 @@ CollectionManager = {
 
       getMeteorState() {
         let cursor = collection.find(
-          this.state.itemFilter
+          _.extend(selector(), this.state.itemFilter)
         );
 
         return {
@@ -45,7 +52,7 @@ CollectionManager = {
             currentFilter = this.state.itemFilter;
 
         if (schema.type === Number && Number(filterVal)) {
-          currentFilter[field] = {$lte: Number(filterVal)};
+          currentFilter[field] = {$gte: Number(filterVal)};
         } else if (schema.type === String && filterVal) {
           currentFilter[field] = new RegExp(filterVal, 'i');
         } else if (schema.type instanceof Relation && filterVal) {
@@ -136,8 +143,7 @@ CollectionManager = {
       },
 
       render () {
-        let component = this,
-            fromIndex = this.state.perPage * this.state.currentPage,
+        let fromIndex = this.state.perPage * this.state.currentPage,
             toIndex = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
             shownItems = this.state.items.slice(fromIndex, toIndex + 1),
             selectorControlStyle = {textAlign: 'center'},
@@ -154,8 +160,8 @@ CollectionManager = {
             <div className="row">
               <div className="col-md-12">
                 <CollectionManager.ListPageSizer
-                  perPage={component.state.perPage}
-                  perPageChanged={component.perPageChanged}/>
+                  perPage={this.state.perPage}
+                  perPageChanged={this.perPageChanged}/>
               </div>
             </div>
             <div className="row">
@@ -164,39 +170,21 @@ CollectionManager = {
                   <div className="panel-heading">
                     <ReactBootstrap.ButtonToolbar>
                       <CollectionManager.SelectedItemsActionsMenu
-                        selectedItemIds={component.state.selectedItemIds}
+                        selectedItemIds={this.state.selectedItemIds}
                         collection={collection}
-                        actions={options.actions}
-                        onActionCompleted={component.selectNone}/>
-                      <ReactBootstrap.ButtonGroup className="pull-right">
-                        <ReactBootstrap.Button
-                          bsStyle="info"
-                          onClick={component.toggleImportModal.bind(component, true)}>
-                          Import
-                        </ReactBootstrap.Button>
-                        <CollectionManager.ImportModal
-                          show={component.state.importModalIsOpen}
-                          onHide={component.toggleImportModal.bind(component, false)}
-                          collection={collection}/>
-                        <ReactBootstrap.Button
-                          bsStyle="primary"
-                          onClick={component.toggleNewModal.bind(component, true)}>
-                          New
-                        </ReactBootstrap.Button>
-                        <CollectionManager.EditModal
-                          show={component.state.newModalIsOpen}
-                          onHide={component.toggleNewModal.bind(component, false)}
-                          collection={collection}/>
-                      </ReactBootstrap.ButtonGroup>
+                        actions={options.selectedItemActions}
+                        onActionCompleted={this.selectNone}/>
+                      <CollectionManager.CollectionActions
+                        collection={collection}
+                        actions={options.collectionActions}/>
                     </ReactBootstrap.ButtonToolbar>
                   </div>
-                  <div className="table-responsive">
-                    <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
+                  <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
                       <thead>
                         <tr>
                           <th style={selectorControlStyle} className='col-md-1'>
                             <CollectionManager.ListItemSelector
-                              onSelect={component.itemSelectorChanged}/>
+                              onSelect={this.itemSelectorChanged}/>
                           </th>
                           {_.map(filterFields, (fieldSchema, fieldName) => {
                             return (
@@ -206,50 +194,41 @@ CollectionManager = {
                                   fieldSchema={fieldSchema}
                                   objectName={collection._name}
                                   placeholder={'Filter for ' + fieldSchema.label}
-                                  onChange={component.filterChangedFor.bind(component, fieldName, fieldSchema)}/>
+                                  onChange={this.filterChangedFor.bind(this, fieldName, fieldSchema)}/>
                               </th>
                             );
                           })}
-                          <th className='col-md-1'></th>
+                          <th className='col-md-2'></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {shownItems.map(function (item) {
+                        {_.map(shownItems, (item) => {
                           return (
                             <tr key={item._id}>
                               <td style={selectorControlStyle}>
                                 <ReactBootstrap.Input
                                   type="checkbox"
-                                  checked={_.contains(component.state.selectedItemIds, item._id)}
-                                  onChange={component.onItemSelected.bind(component, item._id)}/>
+                                  checked={_.contains(this.state.selectedItemIds, item._id)}
+                                  onChange={this.onItemSelected.bind(this, item._id)}/>
                               </td>
-                              {_.map(filterFields, function (schema, name) {
+                              {_.map(filterFields, (fieldSchema, fieldName) => {
                                 return (
                                   <CollectionManager.ListCell
-                                    key={name}
+                                    key={fieldName}
                                     item={item}
-                                    fieldName={name}
-                                    fieldSchema={schema}/>
+                                    fieldName={fieldName}
+                                    fieldSchema={fieldSchema}/>
                                 );
                               })}
-                              <td>
-                                <ReactBootstrap.Button
-                                  onClick={component.toggleEditModal.bind(component, item._id, true)}>
-                                  Edit
-                                </ReactBootstrap.Button>
-                                <CollectionManager.EditModal
-                                  show={component.state.editModalToggles[item._id]}
-                                  onHide={component.toggleEditModal.bind(component, item._id, false)}
-                                  collection={collection}
-                                  itemId={item._id}
-                                  item={item}/>
-                              </td>
+                              <CollectionManager.ItemActions
+                                item={item}
+                                actions={options.itemActions}
+                                collection={collection}/>
                             </tr>
                           );
                         })}
                       </tbody>
                     </ReactBootstrap.Table>
-                  </div>
                 </ReactBootstrap.Panel>
               </div>
             </div>
@@ -258,14 +237,14 @@ CollectionManager = {
                 <CollectionManager.ListInfo
                   fromIndex={fromIndex}
                   toIndex={toIndex}
-                  itemCount={component.state.itemCount}/>
+                  itemCount={this.state.itemCount}/>
               </div>
               <div className="col-md-9">
                 <CollectionManager.ListPaginator
-                  itemCount={component.state.itemCount}
-                  perPage={component.state.perPage}
-                  currentPage={component.state.currentPage}
-                  onPageChange={component.setCurrentPage}/>
+                  itemCount={this.state.itemCount}
+                  perPage={this.state.perPage}
+                  currentPage={this.state.currentPage}
+                  onPageChange={this.setCurrentPage}/>
               </div>
             </div>
           </div>
@@ -273,6 +252,6 @@ CollectionManager = {
       }
     });
 
-    return Composite;
+    return Component;
   }
 }

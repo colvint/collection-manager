@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tauruscolvin:collection-manager',
-  version: '0.0.24',
+  version: '0.0.25',
   summary: 'A drop-in collection manager for your client.',
   git: 'git@github.com:colvint/collection-manager.git',
   documentation: 'README.md'
@@ -24,9 +24,12 @@ Package.onUse(function(api) {
   api.use('tauruscolvin:papaparse@4.2.1', 'client');
   api.addFiles([
     'client/collection-manager.jsx',
+    'client/shared/actionable-mixin.js',
     'client/shared/field.jsx',
     'client/list/cell.jsx',
     'client/list/selected-items-actions-menu.jsx',
+    'client/list/item-actions.jsx',
+    'client/list/collection-actions.jsx',
     'client/list/info.jsx',
     'client/list/item-selector.jsx',
     'client/list/page-sizer.jsx',
