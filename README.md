@@ -16,9 +16,9 @@ Meteor package which provides a client-side collection manager
 #### Example App
 [Example app](https://github.com/colvint/collection-manager-example)
 
-#### Installation (depends on `aldeed:collection2`)
+#### Installation
 
-`meteor add tauruscolvin:collection-manager aldeed:collection2`
+`meteor add tauruscolvin:collection-manager`
 
 #### Usage
 
