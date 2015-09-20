@@ -11,12 +11,12 @@ Package.onUse(function(api) {
 
   api.use('aldeed:collection2@2.5.0');
   api.use('check@1.0.5');
-  api.use('tauruscolvin:relations');
+  api.use('tauruscolvin:relations@0.0.1');
   api.imply('tauruscolvin:relations');
-  api.use('tauruscolvin:meteor-react-bootstrap');
-  api.use('twbs:bootstrap');
-  api.use('fortawesome:fontawesome');
-  api.use('tauruscolvin:papaparse', 'client');
+  api.use('tauruscolvin:meteor-react-bootstrap@0.0.2');
+  api.use('twbs:bootstrap@3.3.5');
+  api.use('fortawesome:fontawesome@4.4.0');
+  api.use('tauruscolvin:papaparse@4.2.1', 'client');
 
   api.addFiles([
     'lib/simple-schema-extension.js'
