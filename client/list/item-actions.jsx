@@ -10,26 +10,43 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
   },
 
   render() {
-    let item = this.props.item;
+    let item = this.props.item,
+        manageButton, actionButtons;
+
+    if (this.props.allowManage) {
+      manageButton = (
+        <ReactBootstrap.Button
+          href={'/admin/organizations/' + item._id}>
+          Manage
+        </ReactBootstrap.Button>
+      );
+    }
+
+    if (_.size(this.props.actions) > 0) {
+      actionButtons = (
+        <ReactBootstrap.DropdownButton
+          title='Actions'
+          onSelect={this.openActionModal}>
+          {_.map(this.props.actions, (action, key) => {
+            return (
+              <ReactBootstrap.MenuItem key={key} eventKey={key}>
+                {action.title}
+              </ReactBootstrap.MenuItem>
+            );
+          })}
+        </ReactBootstrap.DropdownButton>
+      );
+    }
 
     return (
-      <td>
+      <td style={{textAlign: 'center'}}>
         <ReactBootstrap.ButtonGroup>
           <ReactBootstrap.Button
             onClick={this.openActionModal.bind(this, 'editItem')}>
             Edit
           </ReactBootstrap.Button>
-          <ReactBootstrap.DropdownButton
-            title='Actions'
-            onSelect={this.openActionModal}>
-            {_.map(this.props.actions, (action, key) => {
-              return (
-                <ReactBootstrap.MenuItem key={key} eventKey={key}>
-                  {action.title}
-                </ReactBootstrap.MenuItem>
-              );
-            })}
-          </ReactBootstrap.DropdownButton>
+          {manageButton}
+          {actionButtons}
         </ReactBootstrap.ButtonGroup>
         <CollectionManager.EditModal
           show={this.actionModalIsOpen('editItem')}

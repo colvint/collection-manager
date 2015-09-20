@@ -6,7 +6,8 @@ CollectionManager = {
 
     let templateName = options.templateName || (collection._name + 'Manager'),
         selector = options.selector || (() => ({})),
-        subscriptions = options.subscriptions || (() => ({}));
+        subscriptions = options.subscriptions || (() => ({})),
+        allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage;
 
     const Component = ReactMeteor.createClass({
       displayName: templateName,
@@ -188,7 +189,7 @@ CollectionManager = {
                           </th>
                           {_.map(filterFields, (fieldSchema, fieldName) => {
                             return (
-                              <th key={fieldName} className='col-md-3'>
+                              <th key={fieldName} className='col-md-2'>
                                 <CollectionManager.Field
                                   key={fieldName}
                                   fieldSchema={fieldSchema}
@@ -198,7 +199,7 @@ CollectionManager = {
                               </th>
                             );
                           })}
-                          <th className='col-md-2'></th>
+                          <th className='col-md-3'></th>
                         </tr>
                       </thead>
                       <tbody>
@@ -223,7 +224,8 @@ CollectionManager = {
                               <CollectionManager.ItemActions
                                 item={item}
                                 actions={options.itemActions}
-                                collection={collection}/>
+                                collection={collection}
+                                allowManage={allowManage}/>
                             </tr>
                           );
                         })}
