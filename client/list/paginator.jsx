@@ -1,5 +1,5 @@
 CollectionManager.ListPaginator = ReactMeteor.createClass({
-  changePage: function (page) {
+  changePage(page) {
     var currentPage = parseInt(page),
         pageCount   = Math.ceil(this.props.itemCount / this.props.perPage);
 
@@ -8,7 +8,7 @@ CollectionManager.ListPaginator = ReactMeteor.createClass({
     }
   },
 
-  render: function () {
+  render() {
     var currentPage  = parseInt(this.props.currentPage),
         pageCount    = Math.ceil(this.props.itemCount / this.props.perPage),
         prevDisabled = (currentPage <= 0),
@@ -25,7 +25,7 @@ CollectionManager.ListPaginator = ReactMeteor.createClass({
         <ReactBootstrap.NavItem eventKey={prevPage} disabled={prevDisabled}>
           <span>«</span>
         </ReactBootstrap.NavItem>
-        {_.range(0, pageCount).map(function (page, i) {
+        {_.range(0, pageCount).map((page, i) => {
           return (
             <ReactBootstrap.NavItem
               className={classNames({'active': (currentPage === page)})}

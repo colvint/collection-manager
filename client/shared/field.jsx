@@ -1,14 +1,14 @@
 var RelationField = ReactMeteor.createClass({
-  render: function () {
+  render() {
     var selectOptions = this.props.fieldSchema.displayAs.allowedOptions();
 
     return (
       <ReactBootstrap.Input type="select" {...this.props}>
         <option></option>
-        {selectOptions.map(function (selectOption) {
+        {selectOptions.map((option) => {
           return (
-            <option key={selectOption._id} value={selectOption._id}>
-              {selectOption.name}
+            <option key={option._id} value={option._id}>
+              {option.name}
             </option>
           );
         })}
@@ -18,16 +18,16 @@ var RelationField = ReactMeteor.createClass({
 });
 
 var SelectField = ReactMeteor.createClass({
-  render: function () {
+  render() {
     var selectOptions = this.props.fieldSchema.allowedValues;
 
     return (
       <ReactBootstrap.Input type="select" {...this.props}>
         <option></option>
-        {selectOptions.map(function (selectOption) {
+        {selectOptions.map((option) => {
           return (
-            <option key={selectOption} value={selectOption}>
-              {selectOption}
+            <option key={option} value={option}>
+              {option}
             </option>
           );
         })}
@@ -37,7 +37,7 @@ var SelectField = ReactMeteor.createClass({
 });
 
 var InputField = ReactMeteor.createClass({
-  inputTypeFor: function (fieldSchema) {
+  inputTypeFor(fieldSchema) {
     if (fieldSchema.regEx === SimpleSchema.RegEx.Url) {
       return 'url';
     } else if (fieldSchema.type === Number) {
@@ -47,7 +47,7 @@ var InputField = ReactMeteor.createClass({
     }
   },
 
-  render: function () {
+  render() {
     return (
       <ReactBootstrap.Input
         type={this.inputTypeFor(this.props.fieldSchema)}
@@ -57,7 +57,7 @@ var InputField = ReactMeteor.createClass({
 });
 
 CollectionManager.Field = ReactMeteor.createClass({
-  render: function () {
+  render() {
     if (this.props.fieldSchema.displayAs instanceof Relation) {
       return (<RelationField {...this.props}/>);
     } else if (this.props.fieldSchema.allowedValues) {

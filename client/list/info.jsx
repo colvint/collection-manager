@@ -1,5 +1,5 @@
 CollectionManager.ListInfo = ReactMeteor.createClass({
-    render: function () {
+    render() {
       var fromIndex     = this.props.fromIndex,
           toIndex       = this.props.toIndex,
           itemCount     = this.props.itemCount,

@@ -1,13 +1,3 @@
-"use strict";
-
-// var ReadOnlyField = ReactMeteor.createClass({
-//   render: function () {
-//     return (
-//
-//     );
-//   }
-// });
-
 CollectionManager.EditModal = ReactMeteor.createClass({
   mixins: [React.addons.LinkedStateMixin],
 
@@ -16,7 +6,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   getInitialState() {
-    let schema = this.props.collection.simpleSchema();
+    var schema = this.props.collection.simpleSchema();
 
     if (this.isNewItem()) {
       return schema.clean({});
@@ -26,13 +16,13 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   modalTitle() {
-    let actionVerb = this.isNewItem() ? 'New' : 'Edit';
+    var actionVerb = this.isNewItem() ? 'New' : 'Edit';
 
     return actionVerb + ' ' + this.props.collection._name;
   },
 
   validationContext() {
-    let contextKey = this.isNewItem() ? 'new-modal' : ('edit-modal-' + this.props.item._id);
+    var contextKey = this.isNewItem() ? 'new-modal' : ('edit-modal-' + this.props.item._id);
 
     return this.props.collection.simpleSchema().namedContext(contextKey);
   },
@@ -42,7 +32,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   validationState(fieldName) {
-    let item = _.clone(this.state),
+    var item = _.clone(this.state),
         invalidFieldNames,
         fieldIsInvalid = false;
 
@@ -77,7 +67,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   update() {
-    let item = {};
+    var item = {};
 
     _.each(this.props.collection.simpleSchema().schema(),
       (fieldSchema, fieldName) => {
@@ -99,7 +89,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   },
 
   render() {
-    let editFields = {};
+    var editFields = {};
 
     _.each(this.props.collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
       if (fieldSchema.allowEdit) {

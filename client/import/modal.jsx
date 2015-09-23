@@ -1,8 +1,6 @@
-"use strict";
-
-let ImportPreviewer = ReactMeteor.createClass({
+var ImportPreviewer = ReactMeteor.createClass({
   render() {
-    let previewObjects = _.first(this.props.previewObjects, this.props.previewSize),
+    var previewObjects = _.first(this.props.previewObjects, this.props.previewSize),
         schema = this.props.collection.simpleSchema().schema();
 
     return (

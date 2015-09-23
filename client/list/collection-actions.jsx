@@ -1,5 +1,3 @@
-"use strict";
-
 CollectionManager.CollectionActions = ReactMeteor.createClass({
   mixins: [CollectionManager.ActionableMixin],
 

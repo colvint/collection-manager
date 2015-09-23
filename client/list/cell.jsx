@@ -1,5 +1,5 @@
 CollectionManager.ListCell = ReactMeteor.createClass({
-  render: function () {
+  render() {
     var fieldSchema = this.props.fieldSchema,
         item        = this.props.item,
         value       = item[this.props.fieldName],

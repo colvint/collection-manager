@@ -1,5 +1,3 @@
-"use strict";
-
 CollectionManager.ItemActions = ReactMeteor.createClass({
   mixins: [CollectionManager.ActionableMixin],
 
@@ -10,7 +8,7 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
   },
 
   render() {
-    let item = this.props.item,
+    var item = this.props.item,
         manageButton, actionButtons;
 
     if (this.props.allowManage) {

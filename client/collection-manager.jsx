@@ -1,15 +1,13 @@
-"use strict";
-
 CollectionManager = {
   compose(collection, options) {
     if (typeof options === 'undefined') options = {};
 
-    let templateName = options.templateName || (collection._name + 'Manager'),
+    var templateName = options.templateName || (collection._name + 'Manager'),
         selector = options.selector || (() => ({})),
         subscriptions = options.subscriptions || (() => ({})),
         allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage;
 
-    const Component = ReactMeteor.createClass({
+    var Component = ReactMeteor.createClass({
       displayName: templateName,
       templateName: templateName,
 
@@ -28,7 +26,7 @@ CollectionManager = {
       },
 
       getMeteorState() {
-        let cursor = collection.find(
+        var cursor = collection.find(
           _.extend(selector(), this.state.itemFilter)
         );
 
@@ -143,8 +141,8 @@ CollectionManager = {
         this.setState({newModalIsOpen: open});
       },
 
-      render () {
-        let fromIndex = this.state.perPage * this.state.currentPage,
+      render() {
+        var fromIndex = this.state.perPage * this.state.currentPage,
             toIndex = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
             shownItems = this.state.items.slice(fromIndex, toIndex + 1),
             selectorControlStyle = {textAlign: 'center'},

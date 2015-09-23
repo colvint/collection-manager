@@ -1,5 +1,3 @@
-"use strict";
-
 CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
   mixins: [CollectionManager.ActionableMixin],
 
@@ -10,7 +8,7 @@ CollectionManager.SelectedItemsActionsMenu = ReactMeteor.createClass({
   },
 
   render() {
-    let SelectedItemActions;
+    var SelectedItemActions;
 
     if (!_.isEmpty(this.props.selectedItemActions)) {
       SelectedItemActions = (

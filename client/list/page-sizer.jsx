@@ -1,5 +1,5 @@
 CollectionManager.ListPageSizer = ReactMeteor.createClass({
-  render: function () {
+  render() {
     var countOptions = [10, 25, 50, 100];
 
     return (
@@ -9,10 +9,10 @@ CollectionManager.ListPageSizer = ReactMeteor.createClass({
           bsSize="small"
           value={this.props.perPage}
           onChange={this.props.perPageChanged}>
-          {countOptions.map(function (countOption) {
+          {countOptions.map((option) => {
             return (
-              <option key={countOption} value={countOption}>
-                {countOption}
+              <option key={option} value={option}>
+                {option}
               </option>
             );
           })}

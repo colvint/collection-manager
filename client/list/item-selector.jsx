@@ -1,5 +1,5 @@
 CollectionManager.ListItemSelector = ReactMeteor.createClass({
-  render: function () {
+  render() {
     return (
       <ReactBootstrap.DropdownButton
         bsSize="small"

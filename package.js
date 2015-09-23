@@ -1,13 +1,14 @@
 Package.describe({
   name: 'tauruscolvin:collection-manager',
-  version: '0.0.26',
+  version: '0.1.1',
   summary: 'A drop-in collection manager for your client.',
   git: 'git@github.com:colvint/collection-manager.git',
   documentation: 'README.md'
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('1.1.0.3');
+  api.versionsFrom('1.2.0.1');
+  api.use('ecmascript');
 
   api.use('aldeed:collection2@2.5.0');
   api.use('check@1.0.5');

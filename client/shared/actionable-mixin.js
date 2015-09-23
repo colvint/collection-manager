@@ -1,9 +1,9 @@
 CollectionManager.ActionableMixin = {
-  actionModalIsOpen: function (key) {
+  actionModalIsOpen(key) {
     return this.state.actionModalStates[key];
   },
 
-  openActionModal: function (key) {
+  openActionModal(key) {
     var actionModalStates = this.state.actionModalStates;
 
     actionModalStates[key] = true;
@@ -13,7 +13,7 @@ CollectionManager.ActionableMixin = {
     });
   },
 
-  closeActionModal: function (key) {
+  closeActionModal(key) {
     this.setState({actionModalStates: {}});
   }
 }
