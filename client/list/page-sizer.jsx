@@ -3,7 +3,7 @@ CollectionManager.ListPageSizer = ReactMeteor.createClass({
     var countOptions = [10, 25, 50, 100];
 
     return (
-      <p>
+      <ReactBootstrap.Panel>
         <ReactBootstrap.Input
           type="select"
           bsSize="small"
@@ -18,7 +18,7 @@ CollectionManager.ListPageSizer = ReactMeteor.createClass({
           })}
         </ReactBootstrap.Input>
         &nbsp;per page
-      </p>
+      </ReactBootstrap.Panel>
     );
   }
 });
