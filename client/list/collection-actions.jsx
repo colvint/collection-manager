@@ -22,7 +22,8 @@ CollectionManager.CollectionActions = ReactMeteor.createClass({
         <CollectionManager.EditModal
           show={this.actionModalIsOpen('newItem')}
           onHide={this.closeActionModal}
-          collection={this.props.collection}/>
+          collection={this.props.collection}
+          item={{}}/>
           {_.map(this.props.actions, (action, key) => {
             return (
               <action.modal

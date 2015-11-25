@@ -36,6 +36,7 @@ Package.onUse(function(api) {
     'client/list/page-sizer.jsx',
     'client/list/paginator.jsx',
     'client/edit/modal.jsx',
+    'client/edit/item-editor.jsx',
     'client/import/modal.jsx'
   ], 'client');
 

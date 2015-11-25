@@ -14,7 +14,7 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
     if (this.props.allowManage) {
       manageButton = (
         <ReactBootstrap.Button
-          href={'/admin/organizations/' + item._id}>
+          href={'/admin/' + this.props.collection._name + '/' + item._id}>
           Manage
         </ReactBootstrap.Button>
       );
@@ -50,7 +50,6 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
           show={this.actionModalIsOpen('editItem')}
           onHide={this.closeActionModal}
           collection={this.props.collection}
-          itemId={item._id}
           item={item}/>
         {_.map(this.props.actions, (action, key) => {
           return (
