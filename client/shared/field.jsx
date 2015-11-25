@@ -56,12 +56,29 @@ var InputField = ReactMeteor.createClass({
   }
 });
 
+var CheckboxField = React.createClass({
+  render() {
+    var checked = this.props.value;
+
+    return (
+      <ReactBootstrap.Input
+        type="checkbox"
+        checked={checked}
+        {...this.props}/>
+    );
+  }
+});
+
 CollectionManager.Field = ReactMeteor.createClass({
   render() {
-    if (this.props.fieldSchema.displayAs instanceof Relation) {
+    var fieldSchema = this.props.fieldSchema;
+
+    if (fieldSchema.displayAs instanceof Relation) {
       return (<RelationField {...this.props}/>);
-    } else if (this.props.fieldSchema.allowedValues) {
+    } else if (fieldSchema.allowedValues) {
       return (<SelectField {...this.props}/>);
+    } else if (fieldSchema.type === Boolean) {
+      return (<CheckboxField {...this.props}/>);
     } else {
       return (<InputField {...this.props}/>);
     }
