@@ -205,8 +205,8 @@ CollectionManager = {
                             }
                           })}
                           {itemActionHeader}
-                          {_.map(columns, (column) => {
-                            return (<th>{column.title}</th>);
+                          {_.map(columns, (column, i) => {
+                            return (<th key={i}>{column.title}</th>);
                           })}
                         </tr>
                       </thead>
@@ -244,9 +244,9 @@ CollectionManager = {
                                 }
                               })}
                               {itemActions}
-                              {_.map(columns, (column) => {
+                              {_.map(columns, (column, i) => {
                                 return (
-                                  <td>{column.cellContent.apply(item)}</td>
+                                  <td key={i}>{column.cellContent.apply(item)}</td>
                                 );
                               })}
                             </tr>
