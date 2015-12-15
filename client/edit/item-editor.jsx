@@ -1,5 +1,5 @@
 CollectionManager.ItemEditor = ReactMeteor.createClass({
-  mixins: [React.addons.LinkedStateMixin],
+  mixins: [ReactLinkedStateMixin],
   displayName: 'ItemEditor',
   templateName: 'ItemEditor',
 
@@ -40,15 +40,20 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
     return fieldIsInvalid ? 'error' : 'success';
   },
 
-  handleChange(fieldName, e) {
-    var newState = {},
-        newValue = e.target.value,
+  handleChange(fieldName, eventOrObject) {
+    var newState    = {},
         fieldSchema = this.props.collection.simpleSchema().schema()[fieldName];
 
-    if (fieldSchema.type === Boolean) {
-      newState[fieldName] = e.target.checked;
+    if (eventOrObject === null) {
+      newState[fieldName] = null;
+    } else if (fieldSchema.type === Boolean) {
+      newState[fieldName] = eventOrObject.target.checked;
+    } else if (fieldSchema.type.name === 'Array') {
+      newState[fieldName] = _.pluck(eventOrObject, 'value');
+    } else if (fieldSchema.displayAs && fieldSchema.displayAs instanceof Relation) {
+      newState[fieldName] = eventOrObject.value;
     } else {
-      newState[fieldName] = newValue;
+      newState[fieldName] = eventOrObject.target.value;
     }
 
     this.setState(newState);
@@ -90,9 +95,10 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   },
 
   render() {
-    var editFields = {}, label;
+    var editFields = {}, label,
+        schema     = this.props.collection.simpleSchema().schema();
 
-    _.each(this.props.collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+    _.each(schema, (fieldSchema, fieldName) => {
       if (fieldSchema.allowEdit) {
         editFields[fieldName] = fieldSchema;
       }
@@ -106,9 +112,12 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
           return (
             <CollectionManager.Field
               key={fieldName}
+              fieldName={fieldName}
               fieldSchema={fieldSchema}
+              schema={schema}
               label={label}
-              valueLink={this.linkState(fieldName)}
+              value={this.state[fieldName]}
+              onChange={this.handleChange.bind(this, fieldName)}
               bsStyle={this.validationState(fieldName)}
               help={this.validationMessage(fieldName)}
               placeholder={'Enter the ' + this.props.collection._name + ' ' + fieldSchema.label}

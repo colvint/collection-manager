@@ -2,6 +2,7 @@ CollectionManager.ListItemSelector = ReactMeteor.createClass({
   render() {
     return (
       <ReactBootstrap.DropdownButton
+        id="list-item-selector"
         bsSize="small"
         noCaret
         title={<span className="fa fa-list"></span>}

@@ -6,7 +6,8 @@ CollectionManager.ListCell = ReactMeteor.createClass({
         content;
 
     if (fieldSchema.displayAs instanceof Relation) {
-      content = fieldSchema.displayAs.relatedValue(value);
+      value = _.isArray(value) ? value : [value];
+      content = fieldSchema.displayAs.relatedValues(value);
     } else if (fieldSchema.regEx === SimpleSchema.RegEx.Url) {
       content = <a href={value} target="_blank">{value}</a>;
     } else {

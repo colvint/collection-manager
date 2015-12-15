@@ -21,7 +21,7 @@ CollectionManager.ListPaginator = ReactMeteor.createClass({
         onSelect={this.props.onPageChange}
         bsStyle="pills"
         bsSize="xsmall"
-        right>
+        pullRight>
         <ReactBootstrap.NavItem eventKey={prevPage} disabled={prevDisabled}>
           <span>«</span>
         </ReactBootstrap.NavItem>

@@ -1,4 +1,4 @@
-CollectionManager.ItemActions = ReactMeteor.createClass({
+CollectionManager.ItemActions = React.createClass({
   mixins: [CollectionManager.ActionableMixin],
 
   getInitialState() {
@@ -9,13 +9,22 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
 
   render() {
     var item = this.props.item,
-        manageButton, actionButtons;
+        manageButton, editButton, actionButtons;
 
     if (this.props.allowManage) {
       manageButton = (
         <ReactBootstrap.Button
           href={'/admin/' + this.props.collection._name + '/' + item._id}>
           Manage
+        </ReactBootstrap.Button>
+      );
+    }
+
+    if (this.props.allowEdit) {
+      editButton = (
+        <ReactBootstrap.Button
+          onClick={this.openActionModal.bind(this, 'editItem')}>
+          Edit
         </ReactBootstrap.Button>
       );
     }
@@ -39,10 +48,7 @@ CollectionManager.ItemActions = ReactMeteor.createClass({
     return (
       <td style={{textAlign: 'center'}}>
         <ReactBootstrap.ButtonGroup>
-          <ReactBootstrap.Button
-            onClick={this.openActionModal.bind(this, 'editItem')}>
-            Edit
-          </ReactBootstrap.Button>
+          {editButton}
           {manageButton}
           {actionButtons}
         </ReactBootstrap.ButtonGroup>

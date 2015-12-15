@@ -5,7 +5,11 @@ CollectionManager = {
     var templateName = options.templateName || (collection._name + 'Manager'),
         selector = options.selector || (() => ({})),
         subscriptions = options.subscriptions || (() => ({})),
-        allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage;
+        allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage,
+        allowEdit = typeof(options.allowEdit) === 'undefined' ? true : options.allowEdit,
+        hideItemActions = typeof(options.hideItemActions) === 'undefined' ? false : options.hideItemActions,
+        fieldConfig = typeof(options.fieldConfig) === 'undefined' ? {} : options.fieldConfig,
+        columns = typeof(options.columns) === 'undefined' ? [] : options.columns;
 
     var Component = ReactMeteor.createClass({
       displayName: templateName,
@@ -27,7 +31,7 @@ CollectionManager = {
 
       getMeteorState() {
         var cursor = collection.find(
-          _.extend(selector(), this.state.itemFilter)
+          _.extend(selector.apply(this.props), this.state.itemFilter)
         );
 
         return {
@@ -46,8 +50,8 @@ CollectionManager = {
         this.setState({currentPage: page});
       },
 
-      filterChangedFor(field, schema, event) {
-        var filterVal     = event.target.value,
+      filterChangedFor(field, schema, eventOrObject) {
+        var filterVal     = typeof(eventOrObject.target) === 'undefined' ?  eventOrObject.value : eventOrObject.target.value,
             currentFilter = this.state.itemFilter;
 
         if (schema.type === Number && Number(filterVal)) {
@@ -124,7 +128,7 @@ CollectionManager = {
 
         modalToggle[itemId] = flag;
 
-        editModalToggles = React.addons.update(editModalToggles, {
+        editModalToggles = ReactUpdate(editModalToggles, {
           $merge: modalToggle
         });
 
@@ -146,23 +150,21 @@ CollectionManager = {
             toIndex = Math.min(fromIndex + this.state.perPage - 1, this.state.itemCount - 1),
             shownItems = this.state.items.slice(fromIndex, toIndex + 1),
             selectorControlStyle = {textAlign: 'center'},
-            filterFields = {};
+            schema       = collection.simpleSchema().schema(),
+            filterFields = {}, itemActionHeader;
 
-        _.each(collection.simpleSchema().schema(), (fieldSchema, fieldName) => {
+        _.each(schema, (fieldSchema, fieldName) => {
           if (fieldSchema.allowFilter) {
             filterFields[fieldName] = fieldSchema;
           }
         });
 
+        if (!hideItemActions) {
+          itemActionHeader = (<th className='col-md-3'></th>);
+        }
+
         return (
           <div className="form-inline">
-            <div className="row">
-              <div className="col-md-12">
-                <CollectionManager.ListPageSizer
-                  perPage={this.state.perPage}
-                  perPageChanged={this.perPageChanged}/>
-              </div>
-            </div>
             <div className="row">
               <div className="col-md-12">
                 <ReactBootstrap.Panel>
@@ -186,22 +188,42 @@ CollectionManager = {
                               onSelect={this.itemSelectorChanged}/>
                           </th>
                           {_.map(filterFields, (fieldSchema, fieldName) => {
-                            return (
-                              <th key={fieldName} className='col-md-2'>
-                                <CollectionManager.Field
-                                  key={fieldName}
-                                  fieldSchema={fieldSchema}
-                                  objectName={collection._name}
-                                  placeholder={'Filter for ' + fieldSchema.label}
-                                  onChange={this.filterChangedFor.bind(this, fieldName, fieldSchema)}/>
-                              </th>
-                            );
+                            if (!(fieldConfig[fieldName] || {}).hidden) {
+                              return (
+                                <th key={fieldName} className='col-md-2'>
+                                  <CollectionManager.Field
+                                    key={fieldName}
+                                    isFilter={true}
+                                    fieldName={fieldName}
+                                    fieldSchema={fieldSchema}
+                                    schema={schema}
+                                    objectName={collection._name}
+                                    placeholder={'Filter for ' + fieldSchema.label}
+                                    onChange={this.filterChangedFor.bind(this, fieldName, fieldSchema)}/>
+                                </th>
+                              );
+                            }
                           })}
-                          <th className='col-md-3'></th>
+                          {itemActionHeader}
+                          {_.map(columns, (column) => {
+                            return (<th>{column.title}</th>);
+                          })}
                         </tr>
                       </thead>
                       <tbody>
                         {_.map(shownItems, (item) => {
+                          var itemActions;
+
+                          if (!hideItemActions) {
+                            itemActions = (
+                              <CollectionManager.ItemActions
+                                item={item}
+                                actions={options.itemActions}
+                                collection={collection}
+                                allowManage={allowManage}
+                                allowEdit={allowEdit} />
+                            );
+                          }
                           return (
                             <tr key={item._id}>
                               <td style={selectorControlStyle}>
@@ -211,19 +233,22 @@ CollectionManager = {
                                   onChange={this.onItemSelected.bind(this, item._id)}/>
                               </td>
                               {_.map(filterFields, (fieldSchema, fieldName) => {
+                                if (!(fieldConfig[fieldName] || {}).hidden) {
+                                  return (
+                                    <CollectionManager.ListCell
+                                      key={fieldName}
+                                      item={item}
+                                      fieldName={fieldName}
+                                      fieldSchema={fieldSchema}/>
+                                  );
+                                }
+                              })}
+                              {itemActions}
+                              {_.map(columns, (column) => {
                                 return (
-                                  <CollectionManager.ListCell
-                                    key={fieldName}
-                                    item={item}
-                                    fieldName={fieldName}
-                                    fieldSchema={fieldSchema}/>
+                                  <td>{column.cellContent.apply(item)}</td>
                                 );
                               })}
-                              <CollectionManager.ItemActions
-                                item={item}
-                                actions={options.itemActions}
-                                collection={collection}
-                                allowManage={allowManage}/>
                             </tr>
                           );
                         })}
@@ -243,6 +268,7 @@ CollectionManager = {
                 <CollectionManager.ListPaginator
                   itemCount={this.state.itemCount}
                   perPage={this.state.perPage}
+                  perPageChanged={this.perPageChanged}
                   currentPage={this.state.currentPage}
                   onPageChange={this.setCurrentPage}/>
               </div>

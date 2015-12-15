@@ -41,7 +41,7 @@ ImportPreviewer.defaultProps = {
 };
 
 CollectionManager.ImportModal = ReactMeteor.createClass({
-  mixins: [React.addons.LinkedStateMixin],
+  mixins: [ReactLinkedStateMixin],
 
   initialState: {
     processing: false,
@@ -143,22 +143,22 @@ CollectionManager.ImportModal = ReactMeteor.createClass({
               help={'The file should be a CSV containing the ' + this.props.collection._name + ' to import'}
               onChange={this.onFileChosen} />
           </form>
-          <ReactBootstrap.TabbedArea defaultActiveKey={1}>
-            <ReactBootstrap.TabPane
+          <ReactBootstrap.Tabs defaultActiveKey={1}>
+            <ReactBootstrap.Tab
               eventKey={1}
               tab={importableObjects.length + ' importable'}>
               <ImportPreviewer
                 previewObjects={importableObjects}
                 collection={this.props.collection}/>
-            </ReactBootstrap.TabPane>
-            <ReactBootstrap.TabPane
+            </ReactBootstrap.Tab>
+            <ReactBootstrap.Tab
               eventKey={2}
               tab={unImportableObjects.length + ' un-importable'}>
               <ImportPreviewer
                 previewObjects={unImportableObjects}
                 collection={this.props.collection}/>
-            </ReactBootstrap.TabPane>
-          </ReactBootstrap.TabbedArea>
+            </ReactBootstrap.Tab>
+          </ReactBootstrap.Tabs>
           <ReactBootstrap.ProgressBar now={this.state.percentImported} />
         </ReactBootstrap.Modal.Body>
 

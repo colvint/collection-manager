@@ -1,37 +1,43 @@
 var RelationField = ReactMeteor.createClass({
   render() {
-    var selectOptions = this.props.fieldSchema.displayAs.allowedOptions();
+    var label, classes = {
+      'form-group':   !this.props.isFilter,
+      'has-feedback': this.props.hasFeedback,
+      'has-success':  this.props.bsStyle === 'success',
+      'has-warning':  this.props.bsStyle === 'warning',
+      'has-error':    this.props.bsStyle === 'error'
+    };
+
+    var options = _.map(this.props.fieldSchema.displayAs.allowedOptions(), (option) => {
+      label = _.isFunction(option.label) ? option.label() : option.label;
+      return {value: option._id, label: label};
+    });
 
     return (
-      <ReactBootstrap.Input type="select" {...this.props}>
-        <option></option>
-        {selectOptions.map((option) => {
-          return (
-            <option key={option._id} value={option._id}>
-              {option.name}
-            </option>
-          );
-        })}
-      </ReactBootstrap.Input>
+      <div className={classNames(classes)}>
+        <label className='control-label'>
+          {this.props.label}
+        </label>
+        <ReactSelect
+          options={options}
+          {...this.props}>
+        </ReactSelect>
+        <span className='help-block'>
+          {this.props.help}
+        </span>
+      </div>
     );
   }
 });
 
 var SelectField = ReactMeteor.createClass({
   render() {
-    var selectOptions = this.props.fieldSchema.allowedValues;
+    var options = _.map(this.props.allowedValues, (value) => (
+      {value: value, label: value}
+    ));
 
     return (
-      <ReactBootstrap.Input type="select" {...this.props}>
-        <option></option>
-        {selectOptions.map((option) => {
-          return (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          );
-        })}
-      </ReactBootstrap.Input>
+      <ReactSelect options={options} {...this.props}/>
     );
   }
 });
@@ -42,6 +48,10 @@ var InputField = ReactMeteor.createClass({
       return 'url';
     } else if (fieldSchema.type === Number) {
       return 'number';
+    } else if (fieldSchema.type === Date) {
+      return 'date';
+    } else if (fieldSchema.displayAs === 'time') {
+      return 'time';
     } else {
       return 'text';
     }
@@ -71,12 +81,29 @@ var CheckboxField = React.createClass({
 
 CollectionManager.Field = ReactMeteor.createClass({
   render() {
-    var fieldSchema = this.props.fieldSchema;
+    var fieldSchema   = this.props.fieldSchema,
+        fieldName     = this.props.fieldName,
+        fullSchema    = this.props.schema,
+        subSchema     = fullSchema[fieldName + '.$'],
+        allowedValues = fullSchema[fieldName].allowedValues;
+
+    if (subSchema && subSchema.allowedValues) {
+      allowedValues = subSchema.allowedValues;
+    }
 
     if (fieldSchema.displayAs instanceof Relation) {
-      return (<RelationField {...this.props}/>);
-    } else if (fieldSchema.allowedValues) {
-      return (<SelectField {...this.props}/>);
+      return (
+        <RelationField
+          multi={fieldSchema.type.name === 'Array'}
+          {...this.props}/>
+      );
+    } else if (allowedValues) {
+      return (
+        <SelectField
+          allowedValues={allowedValues}
+          multi={fieldSchema.type.name === 'Array'}
+          {...this.props}/>
+      );
     } else if (fieldSchema.type === Boolean) {
       return (<CheckboxField {...this.props}/>);
     } else {

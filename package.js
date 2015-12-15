@@ -1,6 +1,6 @@
 Package.describe({
   name: 'tauruscolvin:collection-manager',
-  version: '0.1.3',
+  version: '0.1.4',
   summary: 'A drop-in collection manager for your client.',
   git: 'git@github.com:colvint/collection-manager.git',
   documentation: 'README.md'
@@ -33,7 +33,6 @@ Package.onUse(function(api) {
     'client/list/collection-actions.jsx',
     'client/list/info.jsx',
     'client/list/item-selector.jsx',
-    'client/list/page-sizer.jsx',
     'client/list/paginator.jsx',
     'client/edit/modal.jsx',
     'client/edit/item-editor.jsx',
