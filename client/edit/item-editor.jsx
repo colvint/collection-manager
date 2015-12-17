@@ -52,6 +52,8 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
       newState[fieldName] = _.pluck(eventOrObject, 'value');
     } else if (fieldSchema.displayAs && fieldSchema.displayAs instanceof Relation) {
       newState[fieldName] = eventOrObject.value;
+    } else if (fieldSchema.allowedValues) {
+      newState[fieldName] = eventOrObject.value;
     } else {
       newState[fieldName] = eventOrObject.target.value;
     }

@@ -1,4 +1,4 @@
-var RelationField = ReactMeteor.createClass({
+var SelectField = ReactMeteor.createClass({
   render() {
     var label, classes = {
       'form-group':   !this.props.isFilter,
@@ -8,36 +8,16 @@ var RelationField = ReactMeteor.createClass({
       'has-error':    this.props.bsStyle === 'error'
     };
 
-    var options = _.map(this.props.fieldSchema.displayAs.allowedOptions(), (option) => {
-      label = _.isFunction(option.label) ? option.label() : option.label;
-      return {value: option._id, label: label};
-    });
-
     return (
       <div className={classNames(classes)}>
         <label className='control-label'>
           {this.props.label}
         </label>
-        <ReactSelect
-          options={options}
-          {...this.props}>
-        </ReactSelect>
+        <ReactSelect options={this.props.options} {...this.props} />
         <span className='help-block'>
           {this.props.help}
         </span>
       </div>
-    );
-  }
-});
-
-var SelectField = ReactMeteor.createClass({
-  render() {
-    var options = _.map(this.props.allowedValues, (value) => (
-      {value: value, label: value}
-    ));
-
-    return (
-      <ReactSelect options={options} {...this.props}/>
     );
   }
 });
@@ -85,22 +65,33 @@ CollectionManager.Field = ReactMeteor.createClass({
         fieldName     = this.props.fieldName,
         fullSchema    = this.props.schema,
         subSchema     = fullSchema[fieldName + '.$'],
-        allowedValues = fullSchema[fieldName].allowedValues;
+        allowedValues = fullSchema[fieldName].allowedValues,
+        options       = [];
 
     if (subSchema && subSchema.allowedValues) {
       allowedValues = subSchema.allowedValues;
     }
 
     if (fieldSchema.displayAs instanceof Relation) {
+      options = _.map(fieldSchema.displayAs.allowedOptions(), (option) => {
+        label = _.isFunction(option.label) ? option.label() : option.label;
+        return {value: option._id, label: label};
+      });
+
       return (
-        <RelationField
+        <SelectField
+          options={options}
           multi={fieldSchema.type.name === 'Array'}
           {...this.props}/>
       );
     } else if (allowedValues) {
+      options = _.map(allowedValues, (value) => (
+        {value: value, label: value}
+      ));
+
       return (
         <SelectField
-          allowedValues={allowedValues}
+          options={options}
           multi={fieldSchema.type.name === 'Array'}
           {...this.props}/>
       );
