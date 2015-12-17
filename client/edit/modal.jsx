@@ -2,7 +2,7 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   displayName: 'EditModal',
 
   isNewItem() {
-    return typeof(this.props.itemId) === 'undefined';
+    return typeof(this.props.item._id) === 'undefined';
   },
 
   modalTitle() {
