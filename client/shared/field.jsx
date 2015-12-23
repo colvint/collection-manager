@@ -28,8 +28,6 @@ var InputField = ReactMeteor.createClass({
       return 'url';
     } else if (fieldSchema.type === Number) {
       return 'number';
-    } else if (fieldSchema.type === Date) {
-      return 'date';
     } else if (fieldSchema.displayAs === 'time') {
       return 'time';
     } else {
@@ -97,6 +95,8 @@ CollectionManager.Field = ReactMeteor.createClass({
       );
     } else if (fieldSchema.type === Boolean) {
       return (<CheckboxField {...this.props}/>);
+    } else if (fieldSchema.type === Date) {
+      return (<DateInput {...this.props} />);
     } else {
       return (<InputField {...this.props}/>);
     }

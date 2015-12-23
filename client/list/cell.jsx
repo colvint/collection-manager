@@ -10,6 +10,8 @@ CollectionManager.ListCell = ReactMeteor.createClass({
       content = fieldSchema.displayAs.relatedValues(value);
     } else if (fieldSchema.regEx === SimpleSchema.RegEx.Url) {
       content = <a href={value} target="_blank">{value}</a>;
+    } else if (fieldSchema.type === Date) {
+      content = value ? moment(value).format('L') : '';
     } else {
       content = value;
     }
