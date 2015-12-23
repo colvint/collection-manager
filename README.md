@@ -107,9 +107,9 @@ if (Meteor.isServer) {
       console.log('Adding startup data...');
 
       var organizations = [
-        {name: 'Foobar Group, Inc.', url: 'http://foobar.example.com', memberCount: 50},
-        {name: 'Bazzy Group, Inc.', url: 'http://bazzy.example.com', memberCount: 20},
-        {name: 'Vertigo Group, Inc.', url: 'http://vertigo.example.com', memberCount: 3},
+        {name: 'Foobar Group, Inc.', url: 'http://foobar.example.com'},
+        {name: 'Bazzy Group, Inc.', url: 'http://bazzy.example.com'},
+        {name: 'Vertigo Group, Inc.', url: 'http://vertigo.example.com'},
       ];
 
       organizations.map(function (obj, i) {

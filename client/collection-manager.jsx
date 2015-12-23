@@ -7,6 +7,8 @@ CollectionManager = {
         subscriptions = options.subscriptions || (() => ({})),
         allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage,
         allowEdit = typeof(options.allowEdit) === 'undefined' ? true : options.allowEdit,
+        allowImport = typeof(options.allowImport) === 'undefined' ? true : options.allowImport,
+        allowNew = typeof(options.allowNew) === 'undefined' ? true : options.allowNew,
         hideItemActions = typeof(options.hideItemActions) === 'undefined' ? false : options.hideItemActions,
         fieldConfig = typeof(options.fieldConfig) === 'undefined' ? {} : options.fieldConfig,
         columns = typeof(options.columns) === 'undefined' ? [] : options.columns;
@@ -177,7 +179,10 @@ CollectionManager = {
                         onActionCompleted={this.selectNone}/>
                       <CollectionManager.CollectionActions
                         collection={collection}
-                        actions={options.collectionActions}/>
+                        actions={options.collectionActions}
+                        allowImport={allowImport}
+                        allowNew={allowNew}
+                        {...this.props} />
                     </ReactBootstrap.ButtonToolbar>
                   </div>
                   <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
