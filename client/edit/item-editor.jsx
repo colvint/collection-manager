@@ -4,13 +4,16 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   templateName: 'ItemEditor',
 
   getInitialState() {
-    var schema = this.props.collection.simpleSchema();
+    var schema = this.props.collection.simpleSchema(),
+        item   = this.props.item || {};
 
-    if (!this.props.item._id) {
-      return schema.clean({});
-    } else {
-      return _.pick(this.props.item, _.keys(schema.schema()));
-    }
+    return _.pick(item, _.keys(schema.schema()));
+  },
+
+  getDefaultProps() {
+    return {
+      numRenderedColumns: 1
+    };
   },
 
   validationContext() {
@@ -54,6 +57,8 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
       newState[fieldName] = eventOrObject.value;
     } else if (fieldSchema.allowedValues) {
       newState[fieldName] = eventOrObject.value;
+    } else if (fieldSchema.isRichTextArea) {
+      newState[fieldName] = eventOrObject.target.getContent();
     } else {
       newState[fieldName] = eventOrObject.target.value;
     }
@@ -97,35 +102,53 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   },
 
   render() {
-    var editFields = {}, label,
-        schema     = this.props.collection.simpleSchema().schema();
+    var editFields = [], label,
+        schema = this.props.collection.simpleSchema().schema(),
+        colSize = (12 / this.props.numRenderedColumns),
+        colClass = 'col-md-' + colSize,
+        fieldGroups;
 
     _.each(schema, (fieldSchema, fieldName) => {
       if (fieldSchema.allowEdit) {
-        editFields[fieldName] = fieldSchema;
+        editFields.push({fieldName: fieldName, fieldSchema: fieldSchema});
       }
+    });
+
+    fieldGroups = _.map(_.range(0, this.props.numRenderedColumns), (col) => {
+      var colIdx = col * colSize;
+      return editFields.slice(colIdx, colIdx + colSize);
     });
 
     return (
       <form>
-        {_.map(editFields, (fieldSchema, fieldName) => {
-          if (fieldSchema.label) label = fieldSchema.label.capitalize();
+        <div className="row">
+          {_.map(fieldGroups, (fieldList, i) => {
+            return (
+              <div key={i} className={colClass}>
+                {_.map(fieldList, (field) => {
+                  var fieldName = field.fieldName, fieldSchema = field.fieldSchema;
 
-          return (
-            <CollectionManager.Field
-              key={fieldName}
-              fieldName={fieldName}
-              fieldSchema={fieldSchema}
-              schema={schema}
-              label={label}
-              value={this.state[fieldName]}
-              onChange={this.handleChange.bind(this, fieldName)}
-              bsStyle={this.validationState(fieldName)}
-              help={this.validationMessage(fieldName)}
-              placeholder={'Enter the ' + this.props.collection._name + ' ' + fieldSchema.label}
-              hasFeedback/>
-          );
-        })}
+                  if (fieldSchema.label) label = fieldSchema.label.capitalize();
+
+                  return (
+                    <CollectionManager.Field
+                      key={fieldName}
+                      fieldName={fieldName}
+                      fieldSchema={fieldSchema}
+                      schema={schema}
+                      label={label}
+                      value={this.state[fieldName]}
+                      onChange={this.handleChange.bind(this, fieldName)}
+                      bsStyle={this.validationState(fieldName)}
+                      help={this.validationMessage(fieldName)}
+                      placeholder={'Enter the ' + this.props.collection._name + ' ' + fieldSchema.label}
+                      hasFeedback/>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
         <ReactBootstrap.ButtonInput
           onClick={this.saveItem}
           bsStyle='primary'
