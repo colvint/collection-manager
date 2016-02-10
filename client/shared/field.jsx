@@ -1,4 +1,4 @@
-var SelectField = ReactMeteor.createClass({
+var SelectField = React.createClass({
   render() {
     var label, classes = {
       'form-group':   !this.props.isFilter,
@@ -22,7 +22,7 @@ var SelectField = ReactMeteor.createClass({
   }
 });
 
-var InputField = ReactMeteor.createClass({
+var InputField = React.createClass({
   inputTypeFor(fieldSchema) {
     if (fieldSchema.regEx === SimpleSchema.RegEx.Url) {
       return 'url';
@@ -30,6 +30,8 @@ var InputField = ReactMeteor.createClass({
       return 'number';
     } else if (fieldSchema.displayAs === 'time') {
       return 'time';
+    } else if (fieldSchema.isTextArea) {
+      return 'textarea';
     } else {
       return 'text';
     }
@@ -39,7 +41,26 @@ var InputField = ReactMeteor.createClass({
     return (
       <ReactBootstrap.Input
         type={this.inputTypeFor(this.props.fieldSchema)}
-        {...this.props}/>
+        {...this.props} />
+    );
+  }
+});
+
+var RichTextField = React.createClass({
+  render() {
+    return (
+      <div className="form-group">
+        <label className='control-label'>
+          {this.props.label}
+        </label>
+        <ReactTinyMCE
+          {...this.props}
+          content={this.props.value}
+          config={{
+            plugins: 'autolink link image lists print preview',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright'
+          }} />
+      </div>
     );
   }
 });
@@ -52,7 +73,7 @@ var CheckboxField = React.createClass({
       <ReactBootstrap.Input
         type="checkbox"
         checked={checked}
-        {...this.props}/>
+        {...this.props} />
     );
   }
 });
@@ -80,7 +101,7 @@ CollectionManager.Field = ReactMeteor.createClass({
         <SelectField
           options={options}
           multi={fieldSchema.type.name === 'Array'}
-          {...this.props}/>
+          {...this.props} />
       );
     } else if (allowedValues) {
       options = _.map(allowedValues, (value) => (
@@ -91,14 +112,16 @@ CollectionManager.Field = ReactMeteor.createClass({
         <SelectField
           options={options}
           multi={fieldSchema.type.name === 'Array'}
-          {...this.props}/>
+          {...this.props} />
       );
     } else if (fieldSchema.type === Boolean) {
-      return (<CheckboxField {...this.props}/>);
+      return (<CheckboxField {...this.props} />);
     } else if (fieldSchema.type === Date) {
       return (<DateInput {...this.props} />);
+    } else if (fieldSchema.isRichTextArea) {
+      return (<RichTextField {...this.props} />);
     } else {
-      return (<InputField {...this.props}/>);
+      return (<InputField {...this.props} />);
     }
   }
 });
