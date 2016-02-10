@@ -12,7 +12,7 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
 
   getDefaultProps() {
     return {
-      numRenderedColumns: 1
+      numRenderedColumns: 1,
     };
   },
 
@@ -109,7 +109,7 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
         fieldGroups;
 
     _.each(schema, (fieldSchema, fieldName) => {
-      if (fieldSchema.allowEdit) {
+      if (fieldSchema.allowEdit && !fieldSchema.denyQuickEdit) {
         editFields.push({fieldName: fieldName, fieldSchema: fieldSchema});
       }
     });
