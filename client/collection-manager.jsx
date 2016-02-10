@@ -4,6 +4,7 @@ CollectionManager = {
 
     var templateName = options.templateName || (collection._name + 'Manager'),
         selector = options.selector || (() => ({})),
+        newItem = options.newItem || (() => ({})),
         subscriptions = options.subscriptions || (() => ({})),
         allowManage = typeof(options.allowManage) === 'undefined' ? true : options.allowManage,
         allowEdit = typeof(options.allowEdit) === 'undefined' ? true : options.allowEdit,
@@ -182,6 +183,7 @@ CollectionManager = {
                         actions={options.collectionActions}
                         allowImport={allowImport}
                         allowNew={allowNew}
+                        newItem={newItem}
                         {...this.props} />
                     </ReactBootstrap.ButtonToolbar>
                   </div>
