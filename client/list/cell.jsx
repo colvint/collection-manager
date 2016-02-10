@@ -12,6 +12,8 @@ CollectionManager.ListCell = ReactMeteor.createClass({
       content = <a href={value} target="_blank">{value}</a>;
     } else if (fieldSchema.type === Date) {
       content = value ? moment(value).format('L') : '';
+    } else if (fieldSchema.type === Boolean) {
+      content = value ? fieldSchema.label : '';
     } else {
       content = value;
     }
