@@ -108,12 +108,9 @@ CollectionManager.Field = ReactMeteor.createClass({
       });
 
       return (
-        <SelectField
-          options={options}
-          multi={fieldSchema.type.name === 'Array'}
-          {...this.props} />
+        <SelectField options={options} multi={fieldSchema.type.name === 'Array'} {...this.props} />
       );
-    } else if (allowedValues) {
+    } else if (allowedValues || fieldSchema.type.name === 'Array') {
       options = _.map(allowedValues, (value) => (
         {value: value, label: value}
       ));
@@ -122,6 +119,7 @@ CollectionManager.Field = ReactMeteor.createClass({
         <SelectField
           options={options}
           multi={fieldSchema.type.name === 'Array'}
+          allowCreate={fieldSchema.type.name === 'Array'}
           {...this.props} />
       );
     } else if (fieldSchema.type === Boolean) {

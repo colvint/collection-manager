@@ -154,16 +154,99 @@ CollectionManager = {
             shownItems = this.state.items.slice(fromIndex, toIndex + 1),
             selectorControlStyle = {textAlign: 'center'},
             schema       = collection.simpleSchema().schema(),
-            filterFields = {}, itemActionHeader;
+            filterFields = {}, itemActionHeader, panelContent;
 
         _.each(schema, (fieldSchema, fieldName) => {
-          if (fieldSchema.allowFilter) {
-            filterFields[fieldName] = fieldSchema;
-          }
+          if (fieldSchema.allowFilter) filterFields[fieldName] = fieldSchema
         });
 
-        if (!hideItemActions) {
-          itemActionHeader = (<th className='col-md-3'></th>);
+        if (!hideItemActions) itemActionHeader = (<th className='col-md-3'></th>)
+
+        if (this.state.itemCount > 0) {
+          panelContent = (
+            <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th style={selectorControlStyle} className='col-md-1'>
+                      <CollectionManager.ListItemSelector
+                        onSelect={this.itemSelectorChanged}/>
+                    </th>
+                    {_.map(filterFields, (fieldSchema, fieldName) => {
+                      if (!(fieldConfig[fieldName] || {}).hidden) {
+                        var label = fieldSchema.label || fieldName
+
+                        return (
+                          <th key={fieldName} className='col-md-2'>
+                            <CollectionManager.Field
+                              key={fieldName}
+                              isFilter={true}
+                              fieldName={fieldName}
+                              fieldSchema={fieldSchema}
+                              schema={schema}
+                              objectName={collection._name}
+                              placeholder={'Filter for ' + label}
+                              onChange={this.filterChangedFor.bind(this, fieldName, fieldSchema)}/>
+                          </th>
+                        );
+                      }
+                    })}
+                    {itemActionHeader}
+                    {_.map(columns, (column, i) => {
+                      return (<th key={i}>{column.title}</th>);
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
+                  {_.map(shownItems, (item) => {
+                    var itemActions;
+
+                    if (!hideItemActions) {
+                      itemActions = (
+                        <CollectionManager.ItemActions
+                          item={item}
+                          actions={options.itemActions}
+                          collection={collection}
+                          allowManage={allowManage}
+                          allowEdit={allowEdit} />
+                      );
+                    }
+                    return (
+                      <tr key={item._id}>
+                        <td style={selectorControlStyle}>
+                          <ReactBootstrap.Input
+                            type="checkbox"
+                            checked={_.contains(this.state.selectedItemIds, item._id)}
+                            onChange={this.onItemSelected.bind(this, item._id)}/>
+                        </td>
+                        {_.map(filterFields, (fieldSchema, fieldName) => {
+                          if (!(fieldConfig[fieldName] || {}).hidden) {
+                            return (
+                              <CollectionManager.ListCell
+                                key={fieldName}
+                                item={item}
+                                fieldName={fieldName}
+                                fieldSchema={fieldSchema}/>
+                            );
+                          }
+                        })}
+                        {itemActions}
+                        {_.map(columns, (column, i) => {
+                          return (
+                            <td key={i}>{column.cellContent.call(item, this.props.item)}</td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </ReactBootstrap.Table>
+          )
+        } else {
+          panelContent = (
+            <ReactBootstrap.Alert bsStyle='info'>
+              There are no {collection._name}
+            </ReactBootstrap.Alert>
+          )
         }
 
         return (
@@ -187,80 +270,7 @@ CollectionManager = {
                         {...this.props} />
                     </ReactBootstrap.ButtonToolbar>
                   </div>
-                  <ReactBootstrap.Table className="table table-bordered table-striped table-hover">
-                      <thead>
-                        <tr>
-                          <th style={selectorControlStyle} className='col-md-1'>
-                            <CollectionManager.ListItemSelector
-                              onSelect={this.itemSelectorChanged}/>
-                          </th>
-                          {_.map(filterFields, (fieldSchema, fieldName) => {
-                            if (!(fieldConfig[fieldName] || {}).hidden) {
-                              return (
-                                <th key={fieldName} className='col-md-2'>
-                                  <CollectionManager.Field
-                                    key={fieldName}
-                                    isFilter={true}
-                                    fieldName={fieldName}
-                                    fieldSchema={fieldSchema}
-                                    schema={schema}
-                                    objectName={collection._name}
-                                    placeholder={'Filter for ' + fieldSchema.label}
-                                    onChange={this.filterChangedFor.bind(this, fieldName, fieldSchema)}/>
-                                </th>
-                              );
-                            }
-                          })}
-                          {itemActionHeader}
-                          {_.map(columns, (column, i) => {
-                            return (<th key={i}>{column.title}</th>);
-                          })}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {_.map(shownItems, (item) => {
-                          var itemActions;
-
-                          if (!hideItemActions) {
-                            itemActions = (
-                              <CollectionManager.ItemActions
-                                item={item}
-                                actions={options.itemActions}
-                                collection={collection}
-                                allowManage={allowManage}
-                                allowEdit={allowEdit} />
-                            );
-                          }
-                          return (
-                            <tr key={item._id}>
-                              <td style={selectorControlStyle}>
-                                <ReactBootstrap.Input
-                                  type="checkbox"
-                                  checked={_.contains(this.state.selectedItemIds, item._id)}
-                                  onChange={this.onItemSelected.bind(this, item._id)}/>
-                              </td>
-                              {_.map(filterFields, (fieldSchema, fieldName) => {
-                                if (!(fieldConfig[fieldName] || {}).hidden) {
-                                  return (
-                                    <CollectionManager.ListCell
-                                      key={fieldName}
-                                      item={item}
-                                      fieldName={fieldName}
-                                      fieldSchema={fieldSchema}/>
-                                  );
-                                }
-                              })}
-                              {itemActions}
-                              {_.map(columns, (column, i) => {
-                                return (
-                                  <td key={i}>{column.cellContent.apply(item)}</td>
-                                );
-                              })}
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </ReactBootstrap.Table>
+                  {panelContent}
                 </ReactBootstrap.Panel>
               </div>
             </div>

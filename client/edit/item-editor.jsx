@@ -5,9 +5,9 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
 
   getInitialState() {
     var schema = this.props.collection.simpleSchema(),
-        item   = this.props.item || {};
+        item   = _.pick(this.props.item || {}, _.keys(schema.schema()));
 
-    return _.pick(item, _.keys(schema.schema()));
+    return {item: item, hasChanged: false};
   },
 
   getDefaultProps() {
@@ -27,11 +27,11 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   },
 
   validationState(fieldName) {
-    var item = _.clone(this.state),
+    var item = _.clone(this.state.item),
         invalidFieldNames,
         fieldIsInvalid = false;
 
-    this.props.collection.simpleSchema().clean(item);
+    this.props.collection.simpleSchema().clean(item, {trimStrings: false});
     this.validationContext().validate(item);
 
     invalidFieldNames = _.pluck(this.validationContext().invalidKeys(), 'name');
@@ -44,57 +44,68 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   },
 
   handleChange(fieldName, eventOrObject) {
-    var newState    = {},
-        fieldSchema = this.props.collection.simpleSchema().schema()[fieldName];
+    var pathSegments = fieldName.split('.').reverse()
+    var fieldRoot    = pathSegments.pop()
+    var fieldKey     = pathSegments.shift()
+    var fieldSchema  = this.props.collection.simpleSchema().schema()[fieldName]
+    var fieldValue, newFieldState, newItem
 
     if (eventOrObject === null) {
-      newState[fieldName] = null;
+      fieldValue = null;
     } else if (fieldSchema.type === Boolean) {
-      newState[fieldName] = eventOrObject.target.checked;
+      fieldValue = eventOrObject.target.checked;
     } else if (fieldSchema.type.name === 'Array') {
-      newState[fieldName] = _.pluck(eventOrObject, 'value');
+      fieldValue = _.pluck(eventOrObject, 'value');
     } else if (fieldSchema.displayAs && fieldSchema.displayAs instanceof Relation) {
-      newState[fieldName] = eventOrObject.value;
+      fieldValue = eventOrObject.value;
     } else if (fieldSchema.allowedValues) {
-      newState[fieldName] = eventOrObject.value;
+      fieldValue = eventOrObject.value;
     } else if (fieldSchema.isRichTextArea) {
-      newState[fieldName] = eventOrObject.target.getContent();
+      fieldValue = eventOrObject.target.getContent();
     } else {
-      newState[fieldName] = eventOrObject.target.value;
+      fieldValue = eventOrObject.target.value;
     }
 
-    this.setState(newState);
+    if (_.isObject(this.state.item[fieldRoot])) {
+      newFieldState = _.reduce(pathSegments,
+        (currentObj, field) => { return {[field]: currentObj} },
+        {$merge: {[fieldKey]: fieldValue}}
+      )
+
+      newFieldState = {[fieldRoot]: ReactUpdate(this.state.item[fieldRoot], newFieldState)}
+    } else {
+      newFieldState = {[fieldRoot]: fieldValue}
+    }
+
+    newItem = ReactUpdate(this.state.item, {$merge: newFieldState})
+
+    this.setState({item: newItem, hasChanged: true});
   },
 
   afterSave(error, result) {
-    var callBack = this.props.onHide || (() => {});
+    var callBack = this.props.onHide || (() => {})
 
-    return error ? console.log(error) : callBack();
+    this.setState({hasChanged: false})
+
+    return error ? console.log(error) : callBack()
   },
 
   create() {
-    return this.props.collection.insert(
-      this.state,
-      this.afterSave
-    );
+    return this.props.collection.insert(this.state.item, this.afterSave)
   },
 
   update() {
-    var updatedItem = {};
+    var updatedItem = {}
+    var itemId = this.props.item._id
+    var itemCollection = this.props.collection
+    var editableKeys = MeteorSite.Collection.permittedKeys(itemCollection)
+    var updatedItem = _.pick(this.state.item, editableKeys)
 
-    _.each(this.props.collection.simpleSchema().schema(),
-      (fieldSchema, fieldName) => {
-        if (!fieldSchema.denyUpdate) {
-          updatedItem[fieldName] = this.state[fieldName];
-        }
-      }
-    );
+    return itemCollection.update(itemId, {$set: updatedItem}, this.afterSave)
+  },
 
-    return this.props.collection.update(
-      this.props.item._id,
-      {$set: updatedItem},
-      this.afterSave
-    );
+  isSaveable() {
+    return this.state.hasChanged && this.validationContext().isValid()
   },
 
   saveItem() {
@@ -102,11 +113,11 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
   },
 
   render() {
-    var editFields = [], label,
-        schema = this.props.collection.simpleSchema().schema(),
-        colSize = (12 / this.props.numRenderedColumns),
-        colClass = 'col-md-' + colSize,
-        fieldGroups;
+    var editFields = []
+    var schema = this.props.collection.simpleSchema().schema()
+    var numCols = this.props.numRenderedColumns
+    var colSize = (12 / numCols)
+    var colClass = 'col-md-' + colSize
 
     _.each(schema, (fieldSchema, fieldName) => {
       if (fieldSchema.allowEdit && !fieldSchema.denyQuickEdit) {
@@ -114,10 +125,8 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
       }
     });
 
-    fieldGroups = _.map(_.range(0, this.props.numRenderedColumns), (col) => {
-      var colIdx = col * colSize;
-      return editFields.slice(colIdx, colIdx + colSize);
-    });
+    var chunkSize = editFields.length / numCols
+    var fieldGroups = _.toArray(_.groupBy(editFields, (field, i) => { return Math.floor(i / chunkSize) }))
 
     return (
       <form>
@@ -126,9 +135,12 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
             return (
               <div key={i} className={colClass}>
                 {_.map(fieldList, (field) => {
-                  var fieldName = field.fieldName, fieldSchema = field.fieldSchema;
+                  let fieldName = field.fieldName
+                  let fieldValue = fieldName.split('.').reduce(function (obj, i) { return obj && obj[i] }, this.state.item)
+                  let fieldSchema = field.fieldSchema
+                  let label = fieldName
 
-                  if (fieldSchema.label) label = fieldSchema.label.capitalize();
+                  if (fieldSchema.label) label = fieldSchema.label
 
                   return (
                     <CollectionManager.Field
@@ -136,12 +148,12 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
                       fieldName={fieldName}
                       fieldSchema={fieldSchema}
                       schema={schema}
-                      label={label}
-                      value={this.state[fieldName]}
+                      label={label.capitalize()}
+                      value={fieldValue}
                       onChange={this.handleChange.bind(this, fieldName)}
                       bsStyle={this.validationState(fieldName)}
                       help={this.validationMessage(fieldName)}
-                      placeholder={'Enter the ' + this.props.collection._name + ' ' + fieldSchema.label}
+                      placeholder={'Enter the ' + this.props.collection._name + ' ' + label}
                       hasFeedback/>
                   );
                 })}
@@ -152,7 +164,7 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
         <ReactBootstrap.ButtonInput
           onClick={this.saveItem}
           bsStyle='primary'
-          disabled={!this.validationContext().isValid()}>
+          disabled={!this.isSaveable()}>
           Save
         </ReactBootstrap.ButtonInput>
       </form>

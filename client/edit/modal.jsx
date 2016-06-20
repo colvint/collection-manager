@@ -8,7 +8,11 @@ CollectionManager.EditModal = ReactMeteor.createClass({
   modalTitle() {
     var actionVerb = this.isNewItem() ? 'New' : 'Edit';
 
-    return actionVerb + ' ' + this.props.collection._name;
+    if (this.isNewItem()) {
+      return `New ${this.props.collection._name}`;
+    } else {
+      return `Edit ${this.props.item.label()}`;
+    }
   },
 
   onHide() {

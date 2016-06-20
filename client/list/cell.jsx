@@ -1,9 +1,9 @@
 CollectionManager.ListCell = ReactMeteor.createClass({
   render() {
-    var fieldSchema = this.props.fieldSchema,
-        item        = this.props.item,
-        value       = item[this.props.fieldName],
-        content;
+    let fieldSchema = this.props.fieldSchema
+    let item        = this.props.item
+    let value       = this.props.fieldName.split('.').reduce(function (obj, i) { return obj && obj[i] }, item)
+    let content
 
     if (fieldSchema.displayAs instanceof Relation) {
       value = _.isArray(value) ? value : [value];
