@@ -66,7 +66,7 @@ CollectionManager.ItemEditor = ReactMeteor.createClass({
       fieldValue = eventOrObject.target.value;
     }
 
-    if (_.isObject(this.state.item[fieldRoot])) {
+    if (_.isObject(this.state.item[fieldRoot]) && !_.isArray(this.state.item[fieldRoot])) {
       newFieldState = _.reduce(pathSegments,
         (currentObj, field) => { return {[field]: currentObj} },
         {$merge: {[fieldKey]: fieldValue}}
